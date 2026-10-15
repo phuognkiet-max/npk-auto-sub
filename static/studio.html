@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NPK Auto Sub</title>
+    <link rel="icon" type="image/x-icon" href="/static/npk-app-icon.ico" />
+    <link rel="stylesheet" href="/static/studio.css" />
+    <link rel="stylesheet" href="/static/clean-panel.css" />
+    <link rel="stylesheet" href="/static/region-editor.css" />
+    <link rel="stylesheet" href="/static/single-video-setup.css" />
+  </head>
+  <body>
+    <header class="top">
+      <img class="brand-mark" src="/static/npk-app-icon.png" alt="" width="32" height="32" />
+      <strong class="brand">NPK <span>AUTO SUB</span><small>0.8.5 RC9</small></strong
+      ><button id="projectsTop" class="project-name">Dự án của bạn</button
+      ><span class="grow"></span><span id="saved" role="status">Sẵn sàng</span
+      ><button
+        id="undo"
+        class="icon"
+        title="Hoàn tác · Ctrl+Z"
+        aria-label="Hoàn tác"
+        data-icon="undo"
+        disabled
+      ></button
+      ><button
+        id="redo"
+        class="icon"
+        title="Làm lại · Ctrl+Y"
+        aria-label="Làm lại"
+        data-icon="redo"
+        disabled
+      ></button
+      ><button id="setupTop" class="primary">Thiết lập &amp; chạy</button><button id="exportTop">Xuất video</button>
+    </header>
+    <div id="backendConnectionStatus" class="connection-status" role="status" hidden></div>
+    <div id="appBody">
+      <nav id="nav" aria-label="Khu vực làm việc">
+        <button data-area="setup" aria-pressed="true" title="Thiết lập một video và chạy toàn bộ quy trình"><i data-icon="video"></i><span>Thiết lập<br />&amp; chạy</span></button>
+        <button data-area="subtitles" aria-pressed="false">
+          <i data-icon="captions"></i><span>Phụ đề</span></button
+        ><button data-area="clean">
+          <i data-icon="eraser"></i><span>Chữ gốc</span></button
+        ><button data-area="voice">
+          <i data-icon="volume"></i
+          ><span>Giọng &amp;<br />âm thanh</span></button
+        ><button data-area="text_to_speech">
+          <i data-icon="volume"></i><span>Tạo giọng</span></button
+        ><span class="grow"></span
+        ><button data-area="projects">
+          <i data-icon="folder"></i><span>Dự án</span></button
+        ><button data-area="settings">
+          <i data-icon="settings"></i><span>Cài đặt</span>
+        </button>
+      </nav>
+      <main id="workbench">
+        <section id="viewer" aria-label="Xem video">
+          <div class="viewer-head">
+            <div>
+              <h1 id="projectName">Bắt đầu với video của bạn</h1>
+              <span id="sourceMeta" class="muted"
+                >Video gốc luôn được giữ nguyên.</span
+              >
+            </div>
+            <div class="source-actions">
+              <select id="viewSource" aria-label="Video đang xem">
+                <option value="source">Video nguồn</option>
+              </select>
+              <button id="replaceSource" disabled title="Chọn video khác cho dự án đang mở">Thay video nguồn</button>
+            </div>
+          </div>
+          <div id="captionPreviewBar" class="caption-preview-bar" hidden>
+            <span id="captionPreviewStatus" class="caption-preview-status" role="status"></span>
+            <button id="captionPreviewToggle" type="button" aria-pressed="false">Xem trước phụ đề</button>
+          </div>
+          <div id="stage">
+            <div id="picture">
+              <video id="video" preload="metadata" playsinline></video>
+              <canvas id="cleanLiveCanvas" hidden aria-hidden="true"></canvas>
+              <img id="cleanLiveFrame" hidden alt="Khung phục hồi theo thông số đang chỉnh" />
+              <div id="caption" aria-hidden="true"></div>
+              <div id="regions" tabindex="0" aria-label="Vùng chữ trong video"></div>
+            </div>
+            <div id="empty">
+              <i data-icon="video"></i>
+              <h2>Phụ đề rõ. Giọng đọc tự nhiên.</h2>
+              <p>Nhập video để tạo, chỉnh sửa và xuất tại một nơi.</p>
+              <button id="importEmpty" class="primary">Nhập video</button>
+            </div>
+          </div>
+          <div id="cleanLiveBar" hidden>
+            <span id="cleanLiveStatus" role="status"></span>
+            <button id="cleanLiveToggle" aria-pressed="true">Xem nguồn</button>
+          </div>
+          <div class="transport">
+            <button
+              id="prev"
+              class="icon"
+              data-icon="previous"
+              aria-label="Khung hình trước"
+              title="Khung hình trước · ←"
+            ></button
+            ><button
+              id="play"
+              class="icon primary"
+              data-icon="play"
+              aria-label="Phát video"
+              title="Phát / tạm dừng · Space"
+            ></button
+            ><button
+              id="next"
+              class="icon"
+              data-icon="next"
+              aria-label="Khung hình tiếp theo"
+              title="Khung hình tiếp theo · →"
+            ></button
+            ><output id="timecode">00:00.00 / 00:00.00</output
+            ><span class="grow"></span
+            ><button
+              id="mute"
+              class="icon"
+              data-icon="volume"
+              aria-label="Tắt âm video"
+              title="Bật / tắt âm video"
+            ></button
+            ><button
+              id="fit"
+              class="icon"
+              data-icon="fit"
+              aria-label="Vừa khung hình"
+              title="Vừa khung hình"
+            ></button
+            ><button
+              id="fullscreen"
+              class="icon"
+              data-icon="fullscreen"
+              aria-label="Toàn màn hình"
+              title="Toàn màn hình"
+            ></button>
+          </div>
+          <input
+            id="scrub"
+            type="range"
+            min="0"
+            max="1"
+            step=".001"
+            value="0"
+            aria-label="Tua video"
+          />
+          <div class="viewer-bottom">
+            <span id="viewerHint">Chọn câu phụ đề để xem đúng thời điểm.</span
+            ><label class="resize-label"
+              >Khung xem
+              <input
+                id="viewerRatio"
+                type="range"
+                min="45"
+                max="64"
+                value="54"
+                aria-label="Chiều rộng khung xem"
+            /></label>
+          </div>
+        </section>
+        <aside id="panel" aria-label="Công cụ biên tập"></aside>
+      </main>
+    </div>
+    <section id="progressDetails" hidden aria-label="Chi tiết tác vụ">
+      <div class="row">
+        <h2>Tiến trình xử lý</h2>
+        <span class="grow"></span
+        ><button
+          id="closeProgress"
+          class="icon"
+          data-icon="close"
+          aria-label="Thu gọn tiến trình"
+        ></button>
+      </div>
+      <div id="jobList"></div>
+      <div id="jobDetails"></div>
+    </section>
+    <footer>
+      <button
+        id="progressToggle"
+        title="Bấm để xem chi tiết tiến trình"
+        aria-expanded="false"
+        aria-controls="progressDetails"
+      >
+        <span id="progressText">Không có tác vụ đang chạy</span
+        ><progress
+          id="progress"
+          max="1"
+          value="0"
+          aria-label="Tiến trình xử lý"
+        ></progress>
+      </button>
+    </footer>
+    <dialog id="modal">
+      <div class="modal-head">
+        <h2 id="modalTitle">NPK Auto Sub</h2>
+        <button
+          id="modalClose"
+          class="icon"
+          data-icon="close"
+          aria-label="Đóng hộp thoại"
+        ></button>
+      </div>
+      <div id="modalBody"></div>
+      <div id="modalActions" class="row end"></div>
+    </dialog>
+    <div id="notice" role="status" hidden></div>
+    <input id="subtitleFile" type="file" accept=".srt,.ass,.vtt" hidden /><audio
+      id="audition"
+      preload="none"
+    ></audio
+    ><audio id="mixVoice" preload="none"></audio
+    ><audio id="mixBgm" preload="none"></audio>
+    <script src="/static/clean-live.js"></script>
+    <script src="/static/workspace-upgrade.js"></script>
+    <script src="/static/region-editor.js"></script>
+    <script src="/static/single-video-setup.js"></script>
+    <script src="/static/studio.js"></script>
+  </body>
+</html>

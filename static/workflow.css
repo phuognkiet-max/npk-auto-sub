@@ -1,0 +1,80 @@
+/* Production workflow layout. Existing controls are relocated, not simulated. */
+body.workflow{background:#090a0b;font-size:14px}
+.workflow #topbar{padding:9px 16px;gap:8px}
+.workflow #topbar button{min-height:35px}
+.workflow #projectSelect{width:205px;max-width:23vw}
+.workflow #tools{flex-direction:row;order:0;padding:9px 18px;gap:8px;border-right:0;border-bottom:1px solid #2d3035;flex-shrink:0}
+.workflow #tools button[data-tool]{flex:1;padding:9px 6px;min-height:39px;color:#b7bcc6;border-radius:3px;white-space:nowrap}
+.workflow #tools button[aria-pressed=true]{color:#ffb367;background:#302115;border-color:#9d632c}
+.workflow #workspace,.workflow.list-hidden #workspace{display:grid;grid-template-columns:minmax(320px,var(--video-share,47%)) 8px minmax(370px,1fr);min-height:0;gap:0;flex:1}
+.workflow #viewer{grid-column:1;grid-row:1;padding:20px 18px 14px;overflow:hidden;gap:10px}
+.workflow #rightSplitter{grid-column:2;grid-row:1;background:#191c20;position:relative}
+.workflow #rightSplitter:after{content:'';height:38px;width:2px;background:#555d67;position:absolute;top:48%;left:3px}
+.workflow #rightSplitter:hover{background:#76502d}
+.workflow #stagePanel{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:0;overflow:hidden;padding:20px 22px 12px;min-width:0;min-height:0}
+.workflow #stageContent{overflow:auto;min-height:0;flex:1;padding-right:2px}
+.workflow #stageContent>#inspector{margin-bottom:14px}
+.workflow #objectDetails{margin-top:12px}
+.workflow #objectDetails>summary{color:#bcc8db}
+.workflow #inspector,.workflow #listPanel{background:#13161a;border:1px solid #2f3339;border-radius:4px;padding:18px;overflow:visible;min-width:0}
+.workflow #inspector{flex-shrink:0}
+.workflow #inspector .panel-head{margin-bottom:4px}
+.workflow #inspectorTitle{font-size:19px}
+.workflow #stageDescription{margin:5px 0 15px;color:#a5aebc}
+.workflow #stageOptions{border-top:1px solid #30343a;margin-top:12px;padding-top:12px}
+.workflow summary{cursor:pointer;color:#d0d5dc;padding:6px 0}
+.workflow #parameters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.workflow #parameters textarea{min-height:85px}
+.workflow #properties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.workflow #properties>strong,.workflow #properties>.source-info,.workflow #properties label:has(textarea){grid-column:1/-1}
+.workflow #properties input{width:100%}
+.workflow #actions{display:flex;flex-wrap:wrap;gap:8px}
+.workflow #actions p{flex-basis:100%;margin:4px 0}
+.workflow #actions button{padding:9px 12px}
+.workflow #results{display:flex;flex-wrap:wrap;gap:8px}
+.workflow #results p,.workflow #results audio,.workflow #results video{width:100%}
+.workflow #results img{width:calc(50% - 25px);object-fit:contain;max-height:190px}
+.workflow #listPanel{display:flex;flex-direction:column;min-height:260px;visibility:visible}
+.workflow #listPanel .panel-head{align-items:center}
+.workflow #listPanel .panel-head label{font-size:12px;margin:0}
+.workflow #searchObjects{margin:9px 0}
+.workflow #objectToolbar{display:flex;flex-wrap:wrap;gap:5px;padding:0 0 9px;align-items:center}
+.workflow #objectToolbar button{font-size:12px;min-height:27px;padding:3px 7px}
+.workflow #selectionLabel{flex:1;max-width:100%;min-width:130px;font-size:12px;color:#b4bac6}
+.workflow #objectList{display:block;max-height:350px;overflow:auto;min-height:80px;flex:none;margin:0}
+.workflow #objectList .cue-row{border:0;border-bottom:1px solid #292f36;display:grid;grid-template-columns:125px minmax(0,1fr);gap:12px;background:transparent;padding:12px 9px;border-radius:0}
+.workflow #objectList .cue-row small{font-variant-numeric:tabular-nums;color:#94a2b8}
+.workflow #objectList .cue-row[aria-pressed=true]{background:#38291c;border-left:2px solid #ff8a1f}
+.workflow #objectList .cue-row.is-current:not([aria-pressed=true]){background:#172738;border-left:2px solid #68a7ff}
+.workflow #listPages{justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid #30343a;font-size:12px}
+.workflow #stageNavigation{display:flex;align-items:center;gap:10px;flex-shrink:0;background:#090a0b;padding:12px 0 5px;border-top:1px solid #2f3339;margin-top:12px}
+.workflow #stageSummary{flex:1;font-size:12px;color:#9da7b6}
+.workflow #viewport{min-height:180px;border-radius:4px}
+.workflow #previewLayers{flex-shrink:0;font-size:12px;border-top:1px solid #2e3239}
+.workflow #trackHeads{padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:transparent}
+.workflow .track-head{height:auto;min-height:54px;padding:4px;border:1px solid #30343a;gap:4px}
+.workflow #viewerHint{color:#9da7b6;display:block;font-size:11px}
+.workflow .viewer-head strong{font-size:13px}
+.workflow .viewer-controls button{font-size:12px;padding:5px 7px}
+.workflow .viewer-head select{width:165px}
+.workflow #mediaInfo{max-width:unset}
+.workflow #jobSummary{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}
+.workflow footer{padding:9px 18px}
+.workflow #jobDetails{max-height:30dvh}
+.workflow #externalVoice{margin-top:15px;border-top:1px solid #353b43;padding-top:8px}
+.workflow #externalVoice h3{font-size:15px;margin:10px 0}
+.workflow #externalVoice input,.workflow #externalVoice audio{width:100%}
+.workflow #externalVoice a{color:#83b7ff;text-decoration:none;padding:8px}
+.workflow #settingsDialog{font-size:14px}
+.workflow #essentials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;margin-top:10px}
+.workflow #essentials>.voice-picker,.workflow #essentials>button{grid-column:1/-1}
+.workflow #stageOptions .extra-actions{grid-column:1/-1;border-top:1px solid #353b43;padding-top:8px;margin-top:12px}
+.workflow .extra-actions button{margin:7px 6px 0 0}
+.workflow #toast{position:static;max-width:none;margin:0 0 7px;padding:6px 9px;font-size:12px}
+.workflow #toast[hidden]{margin:0}
+.workflow .source-info p{overflow-wrap:anywhere}
+.workflow #stageSummary{line-height:1.3}
+.workflow #previewLayers .track-head{min-height:68px}
+@media(max-width:1250px){.workflow #topbar{flex-wrap:wrap;gap:6px}.workflow #topbar .grow{min-width:0}.workflow #stagePanel{padding:14px 12px}.workflow #viewer{padding:14px 12px}.workflow #workspace{grid-template-columns:minmax(310px,var(--video-share,47%)) 8px minmax(340px,1fr)}.workflow #parameters{gap:0 12px}.workflow #objectList .cue-row{grid-template-columns:95px 1fr;font-size:13px}.workflow #transport label{display:none}.workflow #inspector,.workflow #listPanel{padding:14px}}
+@media(max-height:760px){.workflow #topbar{padding:6px 12px}.workflow #tools{padding:5px 12px}.workflow #tools button[data-tool]{padding:5px;min-height:32px}.workflow #stagePanel{padding-top:10px}.workflow #viewer{padding-top:10px}.workflow #viewport{min-height:140px}.workflow #viewerHint{display:none}.workflow #objectList{max-height:245px}.workflow #listPanel{min-height:240px}}
+@media(max-width:760px){body.workflow{overflow:auto;height:auto;min-height:100dvh}.workflow #tools{flex-wrap:wrap}.workflow #tools button[data-tool]{flex:1 0 28%}.workflow #workspace{display:flex;flex-direction:column;overflow:visible}.workflow #viewer{height:450px}.workflow #rightSplitter{display:none}.workflow #stagePanel{overflow:visible}.workflow #stageNavigation{position:static}.workflow #parameters{grid-template-columns:1fr}.workflow footer{position:sticky;bottom:0}.workflow #projectSelect{max-width:50vw}.workflow #stagePanel{padding:12px}.workflow #jobDetails{max-height:45vh;overflow:auto}}

@@ -1,0 +1,1989 @@
+{
+  "purpose": "Sanitized first-party source for discussion and review",
+  "snapshot_date": "2026-10-15",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 164,
+      "sha256": "95437a12e786c99665f28ec540e3dd83ff9d0662b15b6503c778947f3ccac7f7",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 805,
+      "sha256": "040bec3eac081dabf385c7c33ec626e3ad3e4dddc3aeee8daee721bac1fe09fa",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "LICENSE_STATUS.md",
+      "bytes": 848,
+      "sha256": "6979a3211614a7674601eae055ff9efa305ae53ff305f52a96c41ce75b4f9967",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "README.md",
+      "bytes": 9339,
+      "sha256": "9fe33aa30388f57d4461ad9ffb76ff30938acddda16dae5e55876d80b94ce1fd",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "app.py",
+      "bytes": 5164,
+      "sha256": "b09030ca1a5908f96c7128ed2a46045a0ac9607677dc5ae5a1f7c4c8e91e34da",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "artifact_resolver.py",
+      "bytes": 13542,
+      "sha256": "43ed45ac554c6a96527c8785397d9f51d0b3f250b880c23169237fdebae6e5ce",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "asr_checkpoint.py",
+      "bytes": 6665,
+      "sha256": "a7ca9b261ae495df9beaae3567ce648df648e2d8b49e97c387bcc487787b55ad",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "assets/branding/README.md",
+      "bytes": 5788,
+      "sha256": "a3fab185cbc83d9e344e3c17bca38a1f8f884ba416b36dbf6bab08a117799721",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "assets/branding/npk-auto-sub-master.png",
+      "bytes": 903475,
+      "sha256": "dc275e1ee626d6fd23d2d3e4b0a45620ad9946135d68344b28c35840b9800174",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "audio_inputs.py",
+      "bytes": 4449,
+      "sha256": "1b275974f9152c8980f0cfc4d31fbb7bf7fc9b94e7d41c6bf5faf23c0eac8262",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "audio_insights.py",
+      "bytes": 11851,
+      "sha256": "cfd535da1e2744852ffca2be688ae3f953b07641f3a9d4afa285e90b351be8db",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "audio_separation.py",
+      "bytes": 16866,
+      "sha256": "32dbc1f685210f7b48092a8af33c04211c3c4a90f2e58840baeef7d1e017c9b7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "audio_verification.py",
+      "bytes": 2564,
+      "sha256": "576fe7e059312e9ee8d891cde26d8bcccb5ef3d2f2b52964a09cf6956aff99bc",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "auto_subtitle_director.py",
+      "bytes": 21597,
+      "sha256": "de0ac40ce0bba3d2188a8f744eb37ed5d3cf9633c9261cb44603562834d5bf9b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "clean_timing.py",
+      "bytes": 2086,
+      "sha256": "56cf396af1ebc244ea498e9fd7e94a3b82e920bff7365848c665e9279dfc0d9e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "cleaner.py",
+      "bytes": 11500,
+      "sha256": "b9aa4ab2f2dcf69bd64b614a025d685dcb901af9fd5ccf9758b9e9972cee6824",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "core.py",
+      "bytes": 15629,
+      "sha256": "a27394c5f6b9843491474fec0a58175335a88215e5cfb9b862ef57d5440ab26e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "credentials.py",
+      "bytes": 6932,
+      "sha256": "4b29624e5ca82e8bb1e65563b31379537e2477cc7eab9e75f6c0625fa287ca91",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "cue_editor.py",
+      "bytes": 1367,
+      "sha256": "e2f3277bfdb522c8d58942f418d30d7189cbbdfd8014623c1e9ee2da7b4f9a4d",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "docs/AI_REVIEW_GUIDE.md",
+      "bytes": 12162,
+      "sha256": "18af319323a6e696eb5de4edb31ce82f90a433577143343bfd912b18fb683028",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "bytes": 18234,
+      "sha256": "c7e820dcb0f06a8d937de18d346859d68796ec04319826d3b5d8c65823f0a916",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "docs/GETTING_STARTED.md",
+      "bytes": 7791,
+      "sha256": "4e57ef6a4c5e4ee9cd0ac62643c3aface25afe79f24ec27bf7bdcda1fb28a880",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "docs/PROJECT_STATUS.md",
+      "bytes": 5922,
+      "sha256": "1d7f84b592cc54df8c9e473bb0f5933ee5ed5c2d55724a38b49e303198f577dc",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "docs/PUBLICATION_CHECKS.md",
+      "bytes": 2365,
+      "sha256": "48a07faa075e3e4167d3ac5fac452c0f8ae6c45ee965600e6137ae58b25d7feb",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "docs/PUBLIC_SNAPSHOT.md",
+      "bytes": 5339,
+      "sha256": "9906562fce68dba5888b0a59f4876652f078baa1e60aa897de6bbbc731a3312f",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "docs/TEST-BOUNDARIES.md",
+      "bytes": 3427,
+      "sha256": "1148ebde126a499b1544eced99bc5823450db8b786a8ede8a83f33264163353b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "docs/THIRD_PARTY.md",
+      "bytes": 4818,
+      "sha256": "57fca6259319638b06ac9055c1a5f639ac3e241deac0dc3eb4d1bf57552f0151",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "encoding.py",
+      "bytes": 1194,
+      "sha256": "a4ad1ef553d6e0d1bad461135b1eba729ac8012f37c64691b860689cd68b6d19",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "execution_admission.py",
+      "bytes": 23018,
+      "sha256": "7584e95181c23e895d8cc9968a78d954a3ddb8d09d8ef56945706dc1c8a88ca5",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "exports.py",
+      "bytes": 2514,
+      "sha256": "1cbcd39777f7173efc293092b88a43005f190d0c7fded7bbbfb362d74b17824d",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "expressive_text.py",
+      "bytes": 2992,
+      "sha256": "1fbf857a859803004a60ccd75bf42eea92ff8d3f9c85b7e661ff679d3bdb2d99",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "fast_cover.py",
+      "bytes": 6947,
+      "sha256": "0c68a67a9c43090cb2b992ebc95eb02a1df1e7046664d96e7dd6e5d8aedb8f6a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "hardware_admission.py",
+      "bytes": 3402,
+      "sha256": "586db12f8ff307214d2ef4f5630529e469151abedf0da2d0e332d8e3683bced6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "job_admission.py",
+      "bytes": 2755,
+      "sha256": "d5132304848b668b10bf1d56c6ecd50b0554553333b87526fbca47553440c183",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "job_progress.py",
+      "bytes": 14131,
+      "sha256": "cfecc525a836ec341dd7c6a5a8f5045115f169bb4e62910ce4aed41f2e11d650",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "karaoke.py",
+      "bytes": 3000,
+      "sha256": "1ddc8376a4c474c31f6d90f2b12fe48cb044b210f4767d38c79bafabe5271220",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "launcher.py",
+      "bytes": 727,
+      "sha256": "ecb324226a16d66f810dc985b016891ae5f0904c316d703c96186b9aefb33bf2",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "live_clean_preview.py",
+      "bytes": 6831,
+      "sha256": "5cb84f8b3565f738fb44f0e34c2ca62d255f72f5cd0c6060c9f39c2712aca2d3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "narration.py",
+      "bytes": 6547,
+      "sha256": "b8bbdd54117a9e3c88e8c721bf92b695242983fbe1731ebea14a1743f3c68757",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "ocr_checkpoint.py",
+      "bytes": 8444,
+      "sha256": "8e046a9b7f5e1373ee7422e58c5d53209be662742321bfed7a0543b59164dd75",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "ocr_tracks.py",
+      "bytes": 36731,
+      "sha256": "140cb0d9e9d359e52103c66f5d69197d0a0ec96faf3b2a5872a14927a03b2ec4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "owner_connection.py",
+      "bytes": 10592,
+      "sha256": "2aa0b4c2844ebf7cb04af242cbc82486bc417ef5fd2b49dd05ca9cf8cce58efa",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "performance.py",
+      "bytes": 1704,
+      "sha256": "0b844044dd883ec965dd8479b7a724ef46fadc4badf60e618acc4c60c71e5f99",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "pipeline_resume.py",
+      "bytes": 41263,
+      "sha256": "a6c579d5e53ce674d4ae33ac6991bf0478f56743ad50160c77f1c2a2891895a5",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "preflight.py",
+      "bytes": 17045,
+      "sha256": "68165542f3f8e41333a5e003f69d29e5bebc501e962ec245fb02923939581af7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "process_control.py",
+      "bytes": 3008,
+      "sha256": "2cf26fabee923a83bf461d93b0e4b911defe68dc3a76f848a431a04c79c3bd23",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "processing_plan.py",
+      "bytes": 1910,
+      "sha256": "f794a8215cccd7961fe9087f40a1fc18f31f47585eee7e525b92a8d431dd9fd6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "project_bundle.py",
+      "bytes": 14957,
+      "sha256": "fc072505025349c62401553bde1841e1e3186f2fc11b62135ac4b70365e6f0f1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "project_transfer.py",
+      "bytes": 2622,
+      "sha256": "b0867df1f8415f0aa5790894def9141168c0cf9db020a78953355b5ba9e4be5c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "pronunciation.py",
+      "bytes": 3588,
+      "sha256": "591958c91cc682e19aec43f16b1887df1db2b63b24096981d731db735352a463",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "provider_usage.py",
+      "bytes": 38283,
+      "sha256": "cab5230591c6440814cb679505eceb300d848a525d018fe7d9751239aa6374c1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "providers.py",
+      "bytes": 40353,
+      "sha256": "0a2295b4abd39d36ffc1e1dff56fe1522fad2c28d135744cf756e6c31eb721d5",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "request_pacing.py",
+      "bytes": 10299,
+      "sha256": "ec1850936532cf9b13b8548fbfe71f114d35c247288f6c15e07afdba58d56193",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 324,
+      "sha256": "f3919a632a0dc4f9927933f5e18c0d237b2ed45577d194b37367b7f6306ec779",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "resource_budget.py",
+      "bytes": 2715,
+      "sha256": "8e8fee0f39bca0edc4cf4030272c11e1c5d3f0a0db9ac44f0c82219082f7e3f1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "server.py",
+      "bytes": 73190,
+      "sha256": "aefd50ab9f9e6e1c0d9ed981191428f00e0770813a48ffb1e6a4265de1f3fa82",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "setup.ps1",
+      "bytes": 3843,
+      "sha256": "126b265e85751ca57b94dd4a5ee6f8a2ffa9d0c24610bbae2ee463eb52234379",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speaker_groups.py",
+      "bytes": 9840,
+      "sha256": "650c06e6164ae5487ff70628e424cc0add1e00b34796b084b73a8f60d642b33b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speech_delivery.py",
+      "bytes": 13693,
+      "sha256": "3e0c636ee7a1894d0b93047f090309e6d7596efa7c0cc70fd39eff7632008fd4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speech_library.py",
+      "bytes": 2378,
+      "sha256": "0c15ffcfae6c70bdd5288f9144ab805e3662f28934d5fa71b5bdeca55e13d7f6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speech_preparation.py",
+      "bytes": 7557,
+      "sha256": "1793ad224ee7d863d1d97f262ac31ea85b9b97e1e509df8cfac5a0dc9800b749",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speech_rewrite.py",
+      "bytes": 15959,
+      "sha256": "7af93d55d62f5a1f50ef8d4b2a09eb098e778476d5e12e9acc3a454e558b6577",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "speech_word_alignment.py",
+      "bytes": 13157,
+      "sha256": "1b077773d9693e64c3fc47ec5dd2dd10d1a6ebb25bebd8a28b0bfba2598a2f69",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "stage_journal.py",
+      "bytes": 17719,
+      "sha256": "5682f2173cbe85a40ee1a4483458c668cdd2489294de6af16e32075d0c276caf",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/app.js",
+      "bytes": 20852,
+      "sha256": "7a0fc846a7b720810395e494fa72e495dad3323c5d586d3cdb7f40331e894dba",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/clean-live.js",
+      "bytes": 12647,
+      "sha256": "f9a0e010b1a393489cdc790eebe6f07255c4d379205f8b798bb941a19c21449a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/clean-panel.css",
+      "bytes": 7116,
+      "sha256": "f0c7e7e37d955e071636f040381d422f127ebb14598385bdadd92da5ff4dbe14",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/editor.css",
+      "bytes": 12402,
+      "sha256": "319a3c776e9d3575dd6878977254f38fd50bbd68e929a8584a60a5bb6c677439",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/editor.html",
+      "bytes": 9281,
+      "sha256": "06059b7cc9625e19fc0836070e9004f41b831fada557b783ba7115b961b6d6a1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/editor.js",
+      "bytes": 42600,
+      "sha256": "f524272c6805d0fda3eaf81b23ef4fd6e11be0c68fe3d9386c69a5f9827c4200",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/functional.js",
+      "bytes": 10553,
+      "sha256": "398cf33bd758ed3a3123ab504afc6402e49da98ab9d9ac2eb3190f42758bf3c7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/index.html",
+      "bytes": 16192,
+      "sha256": "e293dd4c3ea6b81da5e5511910fdd9792322657e62f343201e626ede0cdc14d7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/npk-app-icon.ico",
+      "bytes": 86551,
+      "sha256": "1a8a73db904836fbed4d7d4c615d60e57dc924268f99a3d60489f971f2389c18",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/npk-app-icon.png",
+      "bytes": 50912,
+      "sha256": "9aeb73a6f7e40c13e697f5836048a942842ffcd7e898423c9d25575584a4bfd2",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/npk.css",
+      "bytes": 3509,
+      "sha256": "1193e6af1dac4cd11c9c75a67012e6e1fb18dd2fdc96315f0624e07594295825",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/region-editor.css",
+      "bytes": 2857,
+      "sha256": "c3225a8b51aa5d9a2e170dcf47cba8849c17d15eeecaf728639a50399044112f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/region-editor.js",
+      "bytes": 2365,
+      "sha256": "99189773daeb9b0a916c86f2d8025471964c27f07eddda77c02dc14a00bb1fb9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/settings-drafts.js",
+      "bytes": 4693,
+      "sha256": "53d5775a73e98a27cbd1c1c04036d6d0955f38d613576b2c64d352e436161ad0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/single-video-setup.css",
+      "bytes": 4998,
+      "sha256": "6c590dfe75746e2a8c1a9f18329bfbd9431bf5432082d49e75ffe5ecbb0e899e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/single-video-setup.js",
+      "bytes": 41999,
+      "sha256": "5212129be0a3f0a3cf0d8c2e03f005853b36a51d906b279b40bb395d7bfb1c6a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/studio.css",
+      "bytes": 25160,
+      "sha256": "6eaed9b73da769eb248d0f68699d72db4f7ae7329d6074cf3544840632b34f5b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/studio.html",
+      "bytes": 8613,
+      "sha256": "ce5c777792dc7c10399721c75e0df4ae13a92d0f5e6f3747ba5d1c2e96337414",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/studio.js",
+      "bytes": 291066,
+      "sha256": "a1982f994e97623e51b0c8bbd2c3e32358a67fe952f0ae11f85b24e2a928fa60",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/style.css",
+      "bytes": 11309,
+      "sha256": "b7d0fb896968878526b96f2ec8f4dd8e241c28cb3e0b5fd516b44424e95b1f1d",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/voice-preview.js",
+      "bytes": 7254,
+      "sha256": "ad2ab36629a190ae3e4ade643eb15dd462b6e012b632c5192c08b5f0f50b7822",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/workflow-layout.js",
+      "bytes": 5464,
+      "sha256": "376f90ceb02cb2a500ba132b67eac9a7f9f5aa6bcfb62593dc2d8803e5423c48",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/workflow.css",
+      "bytes": 7482,
+      "sha256": "800495da2cf2b41c0e5ac690702c3d084087f0ffa2555a329bb98cac7408d5dc",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/workflow.js",
+      "bytes": 15053,
+      "sha256": "0d30032469cf7a368989d46ad3644a5dd3324c97315cb08c990ec306911c128d",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "static/workspace-upgrade.js",
+      "bytes": 37671,
+      "sha256": "da466403704cf0390090071f7ccc9ea3a08b3471004d30e0e4dd5839ded0f4d2",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "storage_manager.py",
+      "bytes": 22052,
+      "sha256": "2a9e5e52ad98b9841f32382b7de790e3eb86ad4ddcc694734089298805e219fc",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "studio_api.py",
+      "bytes": 68258,
+      "sha256": "25b17fcadf6da3dcc04f5a42e07db4e586db36bfdbbb0d58810ec9630dbe37a9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "studio_preferences.py",
+      "bytes": 4384,
+      "sha256": "6c43b28bf3503ec756000c6c9f38e1fd0c0915ef576c0ff0f58334f5caf98438",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "subtitle_flow.py",
+      "bytes": 8851,
+      "sha256": "6553c6c0bf2dbb282c84e2379139bcd2e0984d6dd015aa5764561ea26e968d7e",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "subtitle_fonts.py",
+      "bytes": 1242,
+      "sha256": "ab9cd070e22a96470d306b28a201090279c7d156e01fd361b9d4e930dd3ecd4a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "subtitle_layout.py",
+      "bytes": 754,
+      "sha256": "152f6764616825f31ed1025eadf09b0fb78296e6996a80843f0f5b30098a1868",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "subtitle_presets.py",
+      "bytes": 7728,
+      "sha256": "f983df2708af299bea815a87fe1fe659d779244e5a85314b50221b3981c1c3d0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "subtitle_quality.py",
+      "bytes": 11010,
+      "sha256": "07360d646180a9f43cf4c46fe28249578af04b3412e5437e862976d5e3b87938",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/acceptance_real.py",
+      "bytes": 6454,
+      "sha256": "84b6393d33b6f76f59460cbf633464a6c931bafd86cabbd2b801fbd07d5bbd6e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/ai_clip_audit.py",
+      "bytes": 2888,
+      "sha256": "9d44502206b2e6237465630fd5d44e59662b5a6cbb9bf1c2f7c7061293dd8d07",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/asr_release_test.py",
+      "bytes": 1651,
+      "sha256": "bc27d0fbee49fe15914e08d7a0d3f30a17d409ef1a44d08629b41a431528ff56",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/audio_separation_queue_test.py",
+      "bytes": 8913,
+      "sha256": "bebfe59ff5d100bf85e110d807cd7df441b43caa020019d0ac56dd6df8887ad8",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/audit_vlog_cleanup.py",
+      "bytes": 2416,
+      "sha256": "747f1a2bf68fe1c7bdbef21661aa4c1a2d8c6f91ac09354b3242f07e1016c5f3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/automation_browser_test.py",
+      "bytes": 9510,
+      "sha256": "f011fd645d73c9d9b4eeac67926265181b9c71471dfa5a8f706d260e0bb80a91",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/check_video_seeking.py",
+      "bytes": 1107,
+      "sha256": "14a3683cff8603c5f2d17247a1b3636867fd9409ac6986870222382ab7216c91",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/clean_clip_browser_test.py",
+      "bytes": 5631,
+      "sha256": "882d9822c9b46bbdb8abcaf3cdbf925d7ab069f789ab3f3f6428279851a5ef3e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/clean_controls_browser_test.py",
+      "bytes": 8235,
+      "sha256": "832e7c475fda2dcc19ccb5b4c9a7b34216159cc7ba09553b64170425c671d2f1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/editor_browser_test.py",
+      "bytes": 14064,
+      "sha256": "b9147250dbaa6cde6adfba4bb4bae75c8d46f99efc53f6111f1ed06725ac8164",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/editor_recon.py",
+      "bytes": 1103,
+      "sha256": "57f8c1bc80e90cde3c0adb5d408004660de66f5adc2d9b1320f3a5290bc81e4a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/editor_server.py",
+      "bytes": 2337,
+      "sha256": "2cb73939dff6686cec53e1cc3b574bb92cf9d90479a1fb3bf74934688f5c4d5a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/execution_state_artifacts_ui.cjs",
+      "bytes": 3626,
+      "sha256": "833f9ac4b8e068b8d9583cdfeeb6fb9b9f10b586e09a64beace28437409d3641",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/extraction_smoke.py",
+      "bytes": 2273,
+      "sha256": "967be4cb838cea9e8277194ffa5251062df521d32a91aaf22a3d987adbab789e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/fixture_hardware.py",
+      "bytes": 202,
+      "sha256": "17d0638b998a7ac026c524aa3fc437179d56f57eeb82aa97b110eac2f6b4c27a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/full_voice_upgrade_queue_test.py",
+      "bytes": 14848,
+      "sha256": "c8ac81d7a6471e020fe872c62b5d0658d5b9b387b2ff048c580489ae3f40e92c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/functional_browser_test.py",
+      "bytes": 8128,
+      "sha256": "4ed782fd819fb5178091fd1caba709f2015fd31ec148c35d11e94e55f7f26622",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/functional_smoke.py",
+      "bytes": 4921,
+      "sha256": "b506edfa5a6854fc2cffbbc9dba1367869b5c12b0570938d858eb885ee1256a5",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/icon_native_test.py",
+      "bytes": 2403,
+      "sha256": "5529f4204d3e0dac65c00238450ba2aed6cda272caf99a5f409a8015a9ba036e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/integration.py",
+      "bytes": 7392,
+      "sha256": "306292abef6324d8d8f165d8ce4e574f763df21012c9f0e5122d16ea38f1f0cc",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/job_diagnostics_browser_test.py",
+      "bytes": 6308,
+      "sha256": "59841170d599c27b68be22399239e5962b8ce3180cc2266219df59a5c3e6a7ec",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/live_clean_browser_test.py",
+      "bytes": 10328,
+      "sha256": "8ba8500e015266825bed645d7bd55389c6325d53efc5313a7e880b9f34ca5f2f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/live_lama_smoke.py",
+      "bytes": 1282,
+      "sha256": "378cb520764540abd45b6ec8b3f0e9bf04482a6dc09012d8be8cb22904f18f91",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/live_vlog_preview_test.py",
+      "bytes": 2700,
+      "sha256": "cff13c5a478ffeb9468b692c6cbf271f2b857dbe5b32858f72992b47f7b6b17b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/make_fixture.py",
+      "bytes": 1087,
+      "sha256": "c2314f62d0722d956e24445ceac5f91f1bec097457ffdeb412904a3a8f3f6d16",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/native_preview.py",
+      "bytes": 1187,
+      "sha256": "46876f4370de7c3e4a95246e544852abb1c3729f57733a00b1017acf6dfdeb3e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/natural_voice_browser_test.py",
+      "bytes": 11005,
+      "sha256": "034ca7851a318dec85c67dae519cd6c40ea53dc19ad2f3004eafd0b4e6b6ead6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/natural_voice_engine_test.py",
+      "bytes": 4996,
+      "sha256": "5386ad4812722b0b4778a200a4a572f040e5ba4ef091d8ee8a4c523ea1154934",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/ocr_performance_audit.py",
+      "bytes": 5462,
+      "sha256": "7f6ed550e2227e33f0f731c927f2e851abd536b831d4315199f0e57796037a92",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/ocr_profile_test.py",
+      "bytes": 1878,
+      "sha256": "ec1573e5fd5d2d4d6b5e7327c9c17ac206a6d385768312da610817c97202dc72",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/ocr_scale_benchmark.py",
+      "bytes": 1398,
+      "sha256": "644e2a6ef7c72555b748d0ca8ad28dbb5bbbbd847ad1b7dcd7123bd92e713326",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/pipeline_continue_browser_test.py",
+      "bytes": 28639,
+      "sha256": "0dbdf4835d47c96ff57d5880c36cf8c0a52d55a4bca29846f3333e9a5b11436b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/pipeline_resilience_acceptance.py",
+      "bytes": 4758,
+      "sha256": "52982f0be2fe576d2b69e36834b144e03a59d2688dac4707d161342a18fb65ef",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/prepare_demo.py",
+      "bytes": 1786,
+      "sha256": "743f9ec48bb878e72194071d28daa224724c0bf510f39b5d9e8738f0cbd22406",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/preview_upgrade_browser_test.py",
+      "bytes": 6264,
+      "sha256": "f89b7cd010bcc7457a1b497391e699a19d45fbf8aae046a1832e3161b671649a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/probe_vieneu_backend.py",
+      "bytes": 2024,
+      "sha256": "a0d969eceb8a260333414fd215cd69d21580f8670fce872369b9d6fdf0ec871c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/processed_caption_browser_test.py",
+      "bytes": 17754,
+      "sha256": "3817b126ebf581b7bcec9f34f5fb3caa33258740b689420f7da361d1986a20cf",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/progress_browser_test.py",
+      "bytes": 6231,
+      "sha256": "7fb76baac1e3f2bafb0d82a2844a0545cd52f8ba288be207571189dd237e20ff",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/provider_settings_browser_test.py",
+      "bytes": 17068,
+      "sha256": "34e07e7ca2d64ca65173d34561f5ee876f764db274286f7984089f5b3e5a45b0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/recognition_browser_test.py",
+      "bytes": 9275,
+      "sha256": "5f24a0172e43d0658af306265cc29664544281d56fbbd0775236dae8b94ac975",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/region_changes_browser_test.py",
+      "bytes": 7109,
+      "sha256": "d3ca50d20a9faa5f40d3b68da98945cf07a83fb61d2b1b58b19ebba5568a2cb4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/region_drawing_browser_test.py",
+      "bytes": 9145,
+      "sha256": "00f51a08e2526be4403a5684b926a64892eb3a293cf75a92ed6f48a8d4920222",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/region_editor_browser_test.py",
+      "bytes": 30846,
+      "sha256": "fcb16831d831d88fc83da286c1890107aecbb3e86e284051f7dcd56b5ff9744a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/run_npk_tests.py",
+      "bytes": 559,
+      "sha256": "600b6009911c4b0dfbcd958a8e9c43065993adddf93d08a3a371d80eff5a05f3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/semantic_failure_browser_test.py",
+      "bytes": 12831,
+      "sha256": "d75a29354fa41c4481214b8893411bc0a75cb409d8c6a3ed637fe0b2a46a3a9c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/single_line_browser_test.py",
+      "bytes": 16996,
+      "sha256": "8f9cbfbec73c79e6700d145f62576d0965df3ed3624a6a9d705706f2d4fea942",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/single_video_pipeline_acceptance.py",
+      "bytes": 11643,
+      "sha256": "4862aa3f19be7ad2ecaf39521f5ada07c1fe0a143bd64878726d4ec57faacc7f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/single_video_setup_browser_test.py",
+      "bytes": 20259,
+      "sha256": "c26b18cf2beb703f10e7f84f8e4c41c764e7e553c1c1a71be8d91f57731dec78",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/source_browser_test.py",
+      "bytes": 5731,
+      "sha256": "f5a603a5ce55912c9a2ccb370b8f990ae8f332f9bae0672936c49c02cd7adadd",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/speaker_groups_acceptance.py",
+      "bytes": 2614,
+      "sha256": "9e436dafa300737dcaecc1722ec9b8a2c60fe4ecfa9d0637622a5313880cc740",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/storage_browser_test.py",
+      "bytes": 7951,
+      "sha256": "de6a0dcba4c8b113abfc06c87075fc49e38399d6a5f2a80b4115e44b31e11eef",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/studio_browser_test.py",
+      "bytes": 16426,
+      "sha256": "8b0396b1828a13039e68f8eb29cffbe68ce69a20bb0c460793c5170803138bdd",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/studio_engine_test.py",
+      "bytes": 3428,
+      "sha256": "acb959d91a1cddfc8e0cafb65ae63dc6e3e21b5d3dea9ce751304cde6469aebd",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/studio_lifecycle_test.py",
+      "bytes": 4889,
+      "sha256": "dd4dbeff096dab5fb0852eaae8596ae39516cc9fec08559d10942fc57af6e0f4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/studio_ocr_silent_test.py",
+      "bytes": 3772,
+      "sha256": "5bd836c6f7e1f35989904409153257b1b56f910f60cb9a0df2d840016f2a7737",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/studio_test_server.py",
+      "bytes": 6898,
+      "sha256": "9d2dea4ebbd7679b8f4663745ff67a9adbf3e70e331f6652451c0d31a9fc0573",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_9router_director.py",
+      "bytes": 14080,
+      "sha256": "635398cf072b068bc3b45cfd2782873f932fab061e9b35a4c47084cf078a96a3",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_9router_integration.py",
+      "bytes": 8840,
+      "sha256": "ad8943c73c0c4558924c39544e7890a944102913da489c317a8c2806381bc85f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_9router_provider.py",
+      "bytes": 16884,
+      "sha256": "27f48e2341632ecf03f48165a2c088a9c8f63e2a73f640b5b5edea973f1afa0b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_9router_rewrite.py",
+      "bytes": 8756,
+      "sha256": "9a8bc44193ca97f93b1e559b5859a50eca089f6054c64596a192f4a774169f37",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_adaptive_translation.py",
+      "bytes": 20653,
+      "sha256": "9a72b47b7a78b8e6f3bb8dfce1c9ca2b4b12a6bb057730918af8369f6fb50c64",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_app_icon.py",
+      "bytes": 1724,
+      "sha256": "3a2a184e6ccbeb8be55262d433b96cbcd5fb306f9c21813bc5b484215c21d48f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_artifact_reuse_integrity.py",
+      "bytes": 7964,
+      "sha256": "71282d2fd74a7cf06c84a30e1f495d871f5fb629edcff7df3449a919aa678a3f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_asr_checkpoint.py",
+      "bytes": 9099,
+      "sha256": "9606012336873a8146b6ffa06e316e8d0d459d90959045ba0b350eb9dd46ed12",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_audio_inputs.py",
+      "bytes": 3936,
+      "sha256": "f04af7b9c37beab3f9445755dd084d2a8cfb02b7ffb39abf15a8707999f07786",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_audio_insights.py",
+      "bytes": 4957,
+      "sha256": "db81e126212c20c8fed8bc41b17ed048867e63c1f5335bb26f85941fcab119c3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_audio_separation.py",
+      "bytes": 8694,
+      "sha256": "e749fa803952145ffaf4bb582de8493d44a308f1dbb06cc0b574907ee952cea5",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_audio_separation_integration.py",
+      "bytes": 8841,
+      "sha256": "ef58fec1ce70acf3a4d5d1809c043f211ad71cc29401bd45ab648703d7d670a7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_auto_subtitle_director.py",
+      "bytes": 11345,
+      "sha256": "a69bfbb3bcf067a74c9df955f093777593a547b4d9983c88bed51e4d1d234b26",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_caption_timing_persistence.py",
+      "bytes": 9554,
+      "sha256": "c5b02e5fe0905ba1950c9dcc49e0c632980dd8cddec980a7e56e8dad46f94209",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_character_labels.py",
+      "bytes": 3549,
+      "sha256": "12403d3d86dcc360f7dd1144236d08c3436272c11920b9dd1ba63fc38b1a72e3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_clean_effects.py",
+      "bytes": 5231,
+      "sha256": "d7b25b6615bb39e9e7af08b66dfe0c0d5d211cb4f2ac7dbdf776befd8330d7ef",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_clean_pipeline.py",
+      "bytes": 10622,
+      "sha256": "272909e2fce3ad47580fb5dcfedc01f7a5c2ef0e463a654d1840e463dde650c0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_connection_probe_admission.py",
+      "bytes": 2615,
+      "sha256": "969466fff3cfe7b1b704fcbd48d16789f1c5e7b69a095e7eb78cec742847431e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_connection_quota_scope.py",
+      "bytes": 8495,
+      "sha256": "593ae8b599e5f98fcb4e5bd183f3a472ed4830e1d02d27de29b20c5301367a62",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_continuation_connection_budget.py",
+      "bytes": 6147,
+      "sha256": "5a7d19bc6a4162af04b777e3e52f33f14222199cf46f17728000ca8d49c96eb9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_core.py",
+      "bytes": 2757,
+      "sha256": "8ca1ffc69d7d7a1407fe126e4d5681fab35684dbf4dfffc8d8e997079cadde78",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_cue_content_roles.py",
+      "bytes": 8142,
+      "sha256": "64c8f728e04a59e6ad0f08045418215b729bb4f3a6e01dd22539275e3986beb3",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_cue_editor_contract.py",
+      "bytes": 6127,
+      "sha256": "685e50f01024d8d7be5831a45ca3fa236ca6b06025c196eab0fe77d648cc2b80",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_dubbing_setup.py",
+      "bytes": 14617,
+      "sha256": "b13a1c874658cd46ce615ecfce96de63e9d6dfc4c79dd57164827842adb6fab1",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_editor.py",
+      "bytes": 4572,
+      "sha256": "ebba63b9b7d35ad45c04edc2d01a69a797921cbdee5da6c69f6907da3831ac45",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_execution_admission.py",
+      "bytes": 18440,
+      "sha256": "a4969f4b1f81cac4120d8c7b27385309f21b2b980d2367d9d1a4ab8d7b1a3ae9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_execution_admission_integration.py",
+      "bytes": 15092,
+      "sha256": "a61362fa08ad8dde849e7784829d000a1bf68c54f4fe20b43fd2cb9ff27477b9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_execution_model_contract.py",
+      "bytes": 8949,
+      "sha256": "73d375220c37e3569602bd01bade84732c6a56b724853aedd354b7c9c0afa781",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_execution_state_artifacts.py",
+      "bytes": 15812,
+      "sha256": "41441239df2fa5cac48f8bd4c6fa6cce67fe9700a8b5e238dc6bff7d57baf51e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_expressive_text.py",
+      "bytes": 3842,
+      "sha256": "df329395dd968ae6ac984a33003cfd30eede9fb59d870bf750e39c9175d0a60f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_functional.py",
+      "bytes": 9731,
+      "sha256": "affc9f04bc3ca5415bf5b5ead8fc3a8316e832af9a96719c5c9a87727ec8e056",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_highlight_still_preview.py",
+      "bytes": 3911,
+      "sha256": "b0e3daa5be7192cae55ac4937c8cac5f8ed6724303c358e5917ffa8aac91283f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_job_integrity.py",
+      "bytes": 21639,
+      "sha256": "8f6e337df18af7f8d644c1dabeeb24087ed02b8da0b00bd1ab5cbe3ff3ab0965",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_job_timing.py",
+      "bytes": 2088,
+      "sha256": "7f6ac866d0cc744db4747b9d79e8c8b2ef362f081db32103df186b72b6475562",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_legacy_completed_ocr_asset.py",
+      "bytes": 5238,
+      "sha256": "e8c806cba239aedf18dce04d52bc37112c8db5d22980880f078a669757fcefb2",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_live_clean_preview.py",
+      "bytes": 5536,
+      "sha256": "7d515e9bbc04b51ba47bfbd7e4e7541be3f231458b85da5ae194fba3c46c33af",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_narration_recovery.py",
+      "bytes": 3218,
+      "sha256": "f2e4f4950919054f594801d8a1d26d43ca1ff8dccc7e132f62e6f2c33ed7d86d",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_npk.py",
+      "bytes": 6480,
+      "sha256": "f0c3060bea24935d267e5a2bda104d0ecfc0b359e98d16e36371f2a5ca35cf4b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ocr_checkpoint.py",
+      "bytes": 11657,
+      "sha256": "a25abb17e471598ecd820d745cd3aa33f4b9a5bbb6ea30e81bba3c0b2103e801",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ocr_selection_quality.py",
+      "bytes": 1942,
+      "sha256": "df2bf7bb0c0c428faf83e194828cb8697f48e716376b009d67a7404c235e1710",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ocr_tail_resume.py",
+      "bytes": 5997,
+      "sha256": "94623143ffb1c7c53549bbad44c50a246e1d1cd800d01987c0bcf66c941ffb3c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ocr_track_selection.py",
+      "bytes": 7808,
+      "sha256": "aca47251cd428a77de04cc78695c2005b22b9e7378459f94d25d2d46959ac73c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ocr_tracks.py",
+      "bytes": 14482,
+      "sha256": "2e2484e4c7f39df521985e788abe10dc1b92f24704672440f8d8453302e5d557",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_offline_pipeline_admission.py",
+      "bytes": 5837,
+      "sha256": "73da3a70facc06be12e4954788b0933de0160b2a7becec655966964222d1b73d",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_operations_upgrade.py",
+      "bytes": 26993,
+      "sha256": "8035eaa6bc57aaede48b4fb2fc70034e9967362e2a767c362a95feed7dc7bd61",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_owner_connection.py",
+      "bytes": 15442,
+      "sha256": "3ee416562dade7ed92df6cc6c792a3acee379bfaa18b6b43e53b859f9aed02d6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_owner_heartbeat.py",
+      "bytes": 5931,
+      "sha256": "52b4a977e25b559043acc4c49ec78af425cddb4ff28818f3acce9b35d563ddbe",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_pipeline_integrity.py",
+      "bytes": 19057,
+      "sha256": "461ab721374b4e3b60b094cd2d5846349ceb50f017938c700df55aba41bb47a6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_pipeline_progress_semantics.py",
+      "bytes": 6268,
+      "sha256": "ceda1a53f3a6b265dc9167955b2986110044723fd4e28169e803a34e467669f5",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_pipeline_quality_policy.py",
+      "bytes": 10072,
+      "sha256": "9f88e76c8f7de526c0739d38aeab555e7ec591143a6fd7dcf1595e684fb30ca8",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_pipeline_resume.py",
+      "bytes": 28349,
+      "sha256": "92811bde6b4a98bb7545afb8c00e464aaf871bfc266fe3d7be3de4d01c89477b",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_pipeline_semantic_recovery.py",
+      "bytes": 16138,
+      "sha256": "591a7395e5b0511a103a30c8a5ab7e9eeb4edb408098e93d865327c552e33770",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_provider_dispatch_admission.py",
+      "bytes": 7612,
+      "sha256": "9169749c9b67606e099161ac5ead3329d81af7f9d66c4425dadf7271cc7dc06a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_provider_resilience.py",
+      "bytes": 36059,
+      "sha256": "70aa00f389e2784e83e69f9319b7956e9b0ab9af257712623f370b43a529a590",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_quota_preflight.py",
+      "bytes": 3556,
+      "sha256": "9cfc15708604296ce3f57a72e33ebac9dabbd4c411ba53061886fdabe7c2a156",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_recognition_state.py",
+      "bytes": 3918,
+      "sha256": "7adf862b229f738be444644f92a04ce9545cc4ea387eb312d0db9e491a88ab4c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_region_geometry.py",
+      "bytes": 6812,
+      "sha256": "c5fe1373c901b06e0d76c8498d855bd04a0fbbbd91cc4ac4d02447664f0ae50a",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_release07.py",
+      "bytes": 9234,
+      "sha256": "9c275a96c9020f0963b06b095ac894efd8a9d4a919e79690780f036926caecd3",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_render_stereo.py",
+      "bytes": 3230,
+      "sha256": "b5b895391c4747f74039198cc561e1877779ff2712f1933487678f94fedd8091",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_request_pacing.py",
+      "bytes": 11371,
+      "sha256": "97d4d5dae7a4bf0d2c2d4776142a9ab763eaef0ede260093cf39780d7727735a",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_semantic_stage_barrier.py",
+      "bytes": 5044,
+      "sha256": "b6d90287f8c981c9d40e55a0e310125fd7de0238ca7b93359aef0cc6af022837",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_source_replacement.py",
+      "bytes": 5710,
+      "sha256": "c5f677ab8d7cf4e43225938f069215742f63a60548c72d8336a246b8b6f7db3e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_speaker_groups.py",
+      "bytes": 5714,
+      "sha256": "76e878a5cc21c2a2d42e55ce417d383343d5e75a90c0db04093e949f77e531a8",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_speech_auto_schedule.py",
+      "bytes": 3270,
+      "sha256": "55f722b3386789d42e4dd22f6d8f88a6e339aa6500a519dad0821bb48b6e4f5b",
+      "normalized": true,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_speech_delivery.py",
+      "bytes": 17461,
+      "sha256": "bc5f4c16d5d56f6888ce8c0c31e6e9098acd6110ebb45c4c46e292fac4dd0d9a",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tests/test_speech_preparation.py",
+      "bytes": 10745,
+      "sha256": "568c26e29a3511a0c1a6b11a0eca088f740236d20c849fafab3a248484a37722",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_speech_rewrite.py",
+      "bytes": 11445,
+      "sha256": "1d04ef3c3dc61141662c98baf2a1a8b1190d55f43e3120b4724beb8f63d298d6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_speech_word_alignment.py",
+      "bytes": 21821,
+      "sha256": "ea7005903429338459c12b7d190d5385f9ce1f8857902ab300fdc20a04029302",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_stage_contract_recovery.py",
+      "bytes": 10427,
+      "sha256": "9e9fdd0005756f659b932eb06be7b592236c00337d6b5bdab11484b4ec720e84",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_storage_manager.py",
+      "bytes": 12823,
+      "sha256": "b9f9fef3471063c5f1437f44c2232f885ae59125395842b74d78afc81ae6d120",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_style_rerender.py",
+      "bytes": 8524,
+      "sha256": "90143de9320911de2e90b4004b0fa5b6c1f61d62b2edf23e426065a0bed6a6eb",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_subtitle_flow.py",
+      "bytes": 15647,
+      "sha256": "89b2aae64640f71431e775a0f6981e08574c35c55f364b313cea914a78f75881",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_subtitle_flow_integration.py",
+      "bytes": 12696,
+      "sha256": "8b6f82f5036f0bb4493741170c25847a8bb300dcdcbd30f36573a363d10ebba4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_test_boundaries.py",
+      "bytes": 4626,
+      "sha256": "057a6672192dc83036fd7434a2297c4282af18ec10d54c88251429eea914793a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_translation_integrity.py",
+      "bytes": 12878,
+      "sha256": "c563b5012d0b327fc951e2bd7f31f360d40e9deb1023aafac050d8a7e3bd8cc4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_translation_lineage_budget.py",
+      "bytes": 23771,
+      "sha256": "d8c48b8c960b3f2cfe98c78d56ea31aec84cff5843a1139b8c3c421717533c2a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_translation_request_budget.py",
+      "bytes": 7897,
+      "sha256": "7ccaa4163379d0743662ff5cbf5480dd74167af83240fbdc8070fdc0691e023f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_ui_preference_hydration.py",
+      "bytes": 3345,
+      "sha256": "f48209f69597e5c1ea4d86e3a4007f12008bcf031821acc34e10f5cc92187ddc",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_unified_voice_api.py",
+      "bytes": 5993,
+      "sha256": "c9ca7f8a0c7287e9246558eafa99654f4bd1522af0592beead42b4b72990c378",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_unified_voice_worker.py",
+      "bytes": 8702,
+      "sha256": "3cc1823693eb3b883d31de1edacb29f2d933d03e6a7b8d07b5bbbb98de199e16",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_usability.py",
+      "bytes": 2924,
+      "sha256": "d43ffae1da9b9269fd385134492f334bc543a044604020352a1f12798b73e8a4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_usage_milestone_events.py",
+      "bytes": 1411,
+      "sha256": "3bf777aae292791f95f3f19382d59f4f587a17b66bca0973c69ea1c913ceb57f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_user_first.py",
+      "bytes": 6396,
+      "sha256": "67e6a2701123badd827361b408443c8f80799f91689df14f5a2af82e4af29baa",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_video_sampling_eof.py",
+      "bytes": 5689,
+      "sha256": "56126be2339de84aed207904759fe22be3a87a144ea7888a84e6cde5bbf59157",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_video_upgrade.py",
+      "bytes": 20154,
+      "sha256": "af978bc97328273d930dd09f15042a50f6518289eb70fec3a35024a4f76eca26",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_video_upload.py",
+      "bytes": 9798,
+      "sha256": "49a0b433b1ffee6a1f55a5a910196012a98a94afe557f7568d02e0903afbc1db",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_vieneu_voice.py",
+      "bytes": 17584,
+      "sha256": "53f53fb47ef6b7a05f07e228c9d4de2300ff71e04b8ae0e746574243bade16cf",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_voice_enrollment.py",
+      "bytes": 5713,
+      "sha256": "700bcea23bdc65dfcee68a5cc0cdcb03ed4fea82137840d37826b272537d65d4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_voice_upgrades.py",
+      "bytes": 16519,
+      "sha256": "a3c2cce70d3efa2ff90e51be7266ab728ebbeabc6403b31a352150b8734dd569",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_word_highlight.py",
+      "bytes": 7744,
+      "sha256": "0c9b030ff407ad8c953b9f4c973d367f3986eeaf2e0feac131ca4d2f49115e3c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_workspace_media.py",
+      "bytes": 9294,
+      "sha256": "1d9078673a0acf2abdd8e727a453ae1c06806f65b88c1fb75c7d10934f90fa29",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/translation_recovery_browser_test.py",
+      "bytes": 11106,
+      "sha256": "de628b897ab5d09bf39b270494cf3a7aa5b42d939167f7785b9e6c653a148101",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/ui_server.py",
+      "bytes": 1769,
+      "sha256": "e4e3969aec61b56d9d541d1686ce4e1f7990f573e85bb0cab4c24711763cb539",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/unified_voice_browser_test.py",
+      "bytes": 15040,
+      "sha256": "777fc261e34b6f466aad2a5111b3fbd55879b7015b7af3a61e8fc8cd7783dac7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/unified_voice_engine_test.py",
+      "bytes": 5562,
+      "sha256": "841df10599b54c5d5120f9c27568585589d7a7bb014d8a8ac970b10bc4176d7f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/unified_voice_presets_test.py",
+      "bytes": 10002,
+      "sha256": "5f5e4244fe8e14f606d3bb01f5fa844bcd2fb85e5bd319cb0337b25ae10dde8f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/unified_voice_queue_test.py",
+      "bytes": 8376,
+      "sha256": "e990b03594e0aa17be6fbf8d0a003b3a3e157ccc62b8786f7459cb71924922d4",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/upgrade_browser_test.py",
+      "bytes": 15346,
+      "sha256": "7f3952db8d01ef326cdb2707f1266919acd3f3094281695aef17dfba78b9d100",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/usability_browser_test.py",
+      "bytes": 10309,
+      "sha256": "0827da65e19935153a23bfd6bc3d74f171352240c6a319637835609f002b5c7c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/voice_enrollment_acceptance.py",
+      "bytes": 2210,
+      "sha256": "3de3f7304f1e055fd3ab8891ab4e726dd1ad9765230ff7c1538e19a7ee88c144",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/word_highlight_browser_test.py",
+      "bytes": 12138,
+      "sha256": "e110e63235d0392728bea2c3499be279245e78d0c674d6540b4e734728fa3e18",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tests/workflow_browser_test.py",
+      "bytes": 11409,
+      "sha256": "8425789080ce025f83cb2ecc9687fd14c76b450ecbff134186c2abf7e3368168",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/build-app-icon.py",
+      "bytes": 1112,
+      "sha256": "83ef96566cd78e429b68c8b8b3b4a598784544557f9861e72145cf65b7f438e6",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/continue_pipeline_job.py",
+      "bytes": 10957,
+      "sha256": "2fcc85fee58fd19de303455af2b50f8808fbd2db98a5135e28e5c688941269e1",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/make_review_fixtures.py",
+      "bytes": 2287,
+      "sha256": "5ae60970980ed04cf54dd475107e2d197e193e4a2c0ba35edba8e9805751ca4d",
+      "normalized": false,
+      "curated_for_public_review": true
+    },
+    {
+      "path": "tools/media_fixture_child.py",
+      "bytes": 1546,
+      "sha256": "e751dcca0b1b74daf03ed9fc2d37addbc99d18181cd4d05489d4694548bef0d0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/prepare_public_snapshot.py",
+      "bytes": 5106,
+      "sha256": "cd8d1bd24b34baf18d94ee3aea830a55d7341727f06125ce21fd680d9b65dd96",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/resume_ocr_job.py",
+      "bytes": 3581,
+      "sha256": "44ac8123fef1568f04f83593b88bc6d932331ccadbc316193a2bac71a87b8708",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/resume_translation_job.py",
+      "bytes": 4732,
+      "sha256": "3906d22095eea4b024860861364302499b969d3b795ad10db02b102e0a895e5f",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/run_tests.py",
+      "bytes": 1799,
+      "sha256": "2d5b3c5465a2b4ea143621e73c3c0aa83cf308ba57d1992bde152e7e79e3d848",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/setup_audio_separation.py",
+      "bytes": 2955,
+      "sha256": "b4a5adab2cb9f19c92c16f999d5c73a8daa71076e58028ed479abc0457fc4bb8",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/setup_independent_vieneu.py",
+      "bytes": 8555,
+      "sha256": "ac0298c56c927284c317291f3e4aa0c429208cb0a9c4a6a12fe8a01e6013075e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/setup_voice_enrollment.py",
+      "bytes": 1772,
+      "sha256": "6523b237112d26c58f97ae280a3bdfff5aa8d73bbb76b68781793b7c95df1a65",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/test_bootstrap.py",
+      "bytes": 627,
+      "sha256": "f878a6a29a3c0a7e1013b5a341445823ef8cf997bc9b2ead04cba834e53da45e",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/test_boundary.py",
+      "bytes": 10645,
+      "sha256": "415434e353de70263ab9bc6db8cc4a599898ae7ff3f08a67c2af2a27fc0705e0",
+      "normalized": true,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tools/vieneu_engine.py",
+      "bytes": 18176,
+      "sha256": "804f94b055d4cfaccb879f26eddce73ce01a4fd417892a7d1b5db4fba5d57dfa",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "tracking.py",
+      "bytes": 2233,
+      "sha256": "f1ee1719cf3c3e2e566d6954a21557b30978cc1d98c43042a312cbaf7785418a",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "translation_checkpoint.py",
+      "bytes": 13861,
+      "sha256": "e6097bf7a2431fff22b8a530d2785f8a24f0de88a7121c272fefd7fd9b983d74",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "translation_quality.py",
+      "bytes": 5081,
+      "sha256": "44a54b0d5b7b5ad6f0d0df22e4a8e1b658cac94a2ff73ceadea44977a13547f9",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "video_sampling.py",
+      "bytes": 6488,
+      "sha256": "a8c5e38748580f2e6d67faee8b0d37b16ea2f49a263dd32e8ea6a46d23da997c",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "vieneu_voice.py",
+      "bytes": 21034,
+      "sha256": "dacda9f5afe5296bd657d665e4e3e0b6cb4c1e38cf8ab1cd11fd0e5feb112616",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "voice_enrollment.py",
+      "bytes": 15428,
+      "sha256": "5c2955fcbf42e9d706ead45778cb8e6c0c2b962d51ebd77bf80e0cf160cd83e0",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "voice_metadata.py",
+      "bytes": 879,
+      "sha256": "2827bdee20c0b9936487e46fdf1ed35fe32ec27b14effb2d2eb0446bb1cc49d7",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "voice_samples.py",
+      "bytes": 1106,
+      "sha256": "97a83fb184ef181327e43d787307bd9d369f1a4ce198e824448f767ecb894bca",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "voices.py",
+      "bytes": 6425,
+      "sha256": "202741406010ecc403de9eb0675cd9ded4f46a21050bf06eec2fd5ad6a145b11",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "windows_identity.py",
+      "bytes": 6707,
+      "sha256": "39facd6e0e2ee67ff42d4946f7ac4bb27630b323f2456b9d8fef7a6e1cba2abd",
+      "normalized": false,
+      "curated_for_public_review": false
+    },
+    {
+      "path": "worker.py",
+      "bytes": 91787,
+      "sha256": "4e8c4ae76612a434bb3380ce537175269b6732ea5c7cae6a664ad8d4813c70e9",
+      "normalized": false,
+      "curated_for_public_review": false
+    }
+  ],
+  "excluded": [
+    "data",
+    "models",
+    "runtime",
+    "build",
+    "dist",
+    "executables",
+    "media",
+    "browser profiles",
+    "generated test output",
+    "conversation exports",
+    "personal disk inventories",
+    "upstream reference checkout",
+    "historical package-release.ps1"
+  ],
+  "normalization": [
+    "Local Windows account path becomes developer",
+    "Private protected project ID becomes synthetic 00000000000000000000000000000001",
+    "setup.ps1 discovers Python 3.12 instead of a private absolute path",
+    "Speech schema tests use isolated model identity fixtures instead of installed voice weights"
+  ],
+  "license": "No new open-source license grant is implied. See docs/THIRD_PARTY.md.",
+  "manifest_scope": "All initial publication files except this self-referential manifest; hashes describe working-file bytes before Git line-ending normalization."
+}

@@ -1,0 +1,64 @@
+# Operational state, credentials, models and native runtimes
+/data/
+/models/
+/runtime/
+/build/
+/dist/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*credentials*.json
+*token*.json
+*.sqlite*
+*.db
+*.db-*
+
+# Caches and editor metadata
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.idea/
+.vscode/
+node_modules/
+
+# Browser profiles and generated test/acceptance output
+**/EBWebView/
+**/webview/
+**/User Data/
+**/Local Storage/
+**/Session Storage/
+**/Cookies*
+**/Login Data*
+**/History*
+/tests/*/
+/tests/*.json
+/tests/*.log
+
+# Binaries, weights, archives, media and private handoffs
+*.exe
+*.dll
+*.spec
+*.onnx
+*.pt
+*.gguf
+*.bin
+*.mp4
+*.mkv
+*.mov
+*.wav
+*.mp3
+*.flac
+*.zip
+*.7z
+*.partial
+/docs/session-handoff/
+/docs/build-backups/
+/docs/D-*
+/docs/LOCAL-TOOL-AUDIT*
+/docs/NEXUSENGINE-*
+/tools/vieneu-upstream/
