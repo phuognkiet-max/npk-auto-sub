@@ -42,9 +42,18 @@ def accept_event(current, event):
         counts = ('request_attempts', 'request_limit', 'baseline_requests', 'responses_received',
                   'usage_reported_requests', 'usage_unknown_requests', 'completed_cues',
                   'lineage_request_attempts', 'lineage_request_limit', 'lineage_remaining_requests',
-                  'history_unknown_jobs', 'reused_cues', 'newly_completed_cues', 'remaining_cues')
+                  'history_unknown_jobs', 'reused_cues', 'newly_completed_cues', 'remaining_cues',
+                  'response_model_count', 'response_model_reported_requests',
+                  'response_model_missing_requests', 'model_mismatch_requests')
         current['api_usage'] = {key: usage[key] for key in counts
                                 if type(usage.get(key)) is int and usage[key] >= 0}
+        from provider_usage import _model_id
+        for key in ('configured_model', 'response_model'):
+            if _model_id(usage.get(key)):
+                current['api_usage'][key] = usage[key]
+        if isinstance(usage.get('response_models'), list):
+            current['api_usage']['response_models'] = list(dict.fromkeys(
+                value for value in usage['response_models'][:100] if _model_id(value)))
         tokens = usage.get('reported_tokens')
         if isinstance(tokens, dict):
             current['api_usage']['reported_tokens'] = {key: tokens[key] for key in
@@ -149,8 +158,16 @@ def verify_outputs(result, project, job, folder):
     if result.get('needs_review') and job['kind'] in ('pipeline', 'ocr', 'asr'):
         # A semantic-only continuation retains raw OCR in its owner job and
         # produces a separate selected transcript in this job's folder.
-        required = ({'selected-source.srt'} if job['kind'] == 'pipeline' and
-                    'source.srt' not in files else {'source.srt'})
+        if job['kind'] == 'pipeline' and result.get('review_stage') == 'pre_render':
+            required = {'pipeline-review.json'}
+            if (result.get('remaining_steps') != ['render'] or 'final.mp4' in files or
+                    result.get('primary_file') == 'final.mp4' or
+                    not isinstance(result.get('pre_render_signature'), str) or
+                    len(result['pre_render_signature']) != 64):
+                raise ValueError('Kết quả chờ duyệt trước xuất không hợp lệ; chưa công bố video thành phẩm.')
+        else:
+            required = ({'selected-source.srt'} if job['kind'] == 'pipeline' and
+                        'source.srt' not in files else {'source.srt'})
     if not required.issubset(files):
         raise ValueError('Worker thiếu kết quả bắt buộc của bước xử lý.')
     if job['kind'] == 'separate_audio':

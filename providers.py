@@ -232,6 +232,27 @@ def _response_json(response):
     return data
 
 
+def _response_model_provenance(provider, data, configured_model):
+    """Only record a model the service actually names, never infer a route.
+
+    A router's public route can differ from its upstream model. An exact
+    mismatch is evidence for review, not permission to rewrite either ID.
+    """
+    key = 'modelVersion' if provider == 'gemini' else 'model'
+    value = data.get(key)
+    result = {'configured_model': configured_model, 'response_model_status': 'missing'}
+    if value is None:
+        return result
+    try:
+        reported = safe_model(value)
+    except ValueError:
+        result['response_model_status'] = 'invalid'
+        return result
+    result.update(response_model=reported, response_model_status='reported',
+                  response_model_matches_configured=reported == configured_model)
+    return result
+
+
 def _retry_after(response):
     value = response.headers.get('Retry-After', '').strip()
     if not value:
@@ -565,6 +586,13 @@ def generate(provider, secret, model, prompt, *, json_mode=False, client=None, p
                             max_attempts=max_attempts, on_request=on_request, base_url=endpoint,
                             images=image_parts, max_output_tokens=max_output_tokens)
     probe_success_hooks = []
+    last_attempt = 0
+    def observe_generation(event):
+        nonlocal last_attempt
+        if event.get('event') == 'before_send':
+            last_attempt = event['attempt']
+        if on_request is not None:
+            on_request(dict(event, configured_model=model))
     if provider == 'gemini':
         # Gemini 3.x documentation recommends provider defaults for sampling.
         # Older models keep the established low-variance translation setting.
@@ -587,7 +615,7 @@ def generate(provider, secret, model, prompt, *, json_mode=False, client=None, p
         response = _request(lambda: client.post(f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
             headers={'x-goog-api-key': secret}, json={'contents': [{'parts': parts}], 'generationConfig': config}),
             on_retry=on_retry, should_cancel=should_cancel, read_timeout_attempts=read_timeout_attempts,
-            max_attempts=max_attempts, on_request=on_request,
+            max_attempts=max_attempts, on_request=observe_generation,
             pacing_provider=provider, pacing_endpoint=endpoint, quota_probe=probe,
             probe_success_hooks=probe_success_hooks)
     else:
@@ -605,16 +633,20 @@ def generate(provider, secret, model, prompt, *, json_mode=False, client=None, p
         options = {'follow_redirects': False} if provider == 'router9' else {}
         response = _request(lambda: client.post(url,
             headers={'Authorization': f'Bearer {secret}'}, json=body, **options), on_retry=on_retry, should_cancel=should_cancel,
-            read_timeout_attempts=read_timeout_attempts, max_attempts=max_attempts, on_request=on_request,
+            read_timeout_attempts=read_timeout_attempts, max_attempts=max_attempts, on_request=observe_generation,
             pacing_provider=provider, pacing_endpoint=endpoint, quota_probe=probe,
             probe_success_hooks=probe_success_hooks)
     try:
         data = _response_json(response)
     finally:
         response.close()
+    provenance = _response_model_provenance(provider, data, model)
+    if on_request is not None and provenance['response_model_status'] != 'missing':
+        on_request({'event': 'model_provenance', 'attempt': last_attempt,
+                    **provenance})
     usage = _usage_counts(provider, data)
     if on_request is not None and usage:
-        on_request({'event': 'usage', 'usage': usage})
+        observe_generation({'event': 'usage', 'attempt': last_attempt, 'usage': usage})
     try:
         if provider == 'gemini':
             feedback = data.get('promptFeedback')
@@ -682,6 +714,9 @@ def check_connection(provider, secret, model='', mode='catalog', client=None, *,
         phase = event.get('event')
         if phase == 'before_send':
             requests.append({'http_status': None, 'usage': {}})
+            if event.get('configured_model') is not None:
+                requests[-1]['configured_model'] = event['configured_model']
+                requests[-1]['response_model_status'] = 'missing'
         elif phase == 'response' and requests:
             requests[-1]['http_status'] = event.get('http_status')
         elif phase == 'usage' and requests:
@@ -690,6 +725,11 @@ def check_connection(provider, secret, model='', mode='catalog', client=None, *,
                                      if key in ('input_tokens', 'output_tokens', 'total_tokens',
                                                 'thinking_tokens', 'cached_input_tokens') and
                                      type(value) is int and 0 <= value <= 2**53 - 1}
+        elif phase == 'model_provenance' and requests:
+            for key in ('configured_model', 'response_model', 'response_model_status',
+                        'response_model_matches_configured'):
+                if key in event:
+                    requests[-1][key] = event[key]
 
     def audited(result):
         token_keys = ('input_tokens', 'output_tokens', 'total_tokens', 'thinking_tokens', 'cached_input_tokens')
@@ -702,6 +742,16 @@ def check_connection(provider, secret, model='', mode='catalog', client=None, *,
                  'reported_tokens': {key: sum(row.get(key, 0) for row in reported) for key in token_keys},
                  'cost_verification': 'unverified' if mode == 'generation' else 'not_applicable_to_generation'}
         result['api_usage'] = usage
+        if mode == 'generation':
+            usage['configured_model'] = safe_model(model, provider)
+            usage['response_models'] = sorted({row['response_model'] for row in requests if 'response_model' in row})
+            usage['response_model_missing_requests'] = sum('response_model' not in row for row in requests)
+            usage['model_mismatch_requests'] = sum(row.get('response_model_matches_configured') is False for row in requests)
+            usage['model_provenance'] = [{key: row[key] for key in ('configured_model', 'response_model',
+                'response_model_status', 'response_model_matches_configured', 'http_status') if key in row}
+                for row in requests]
+            if requests and 'response_model' in requests[-1]:
+                usage['response_model'] = requests[-1]['response_model']
         if mode == 'generation' and requests:
             statuses = ', '.join(str(row['http_status']) if row['http_status'] is not None else 'chưa có phản hồi'
                                  for row in requests)

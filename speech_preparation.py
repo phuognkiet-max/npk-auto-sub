@@ -9,7 +9,7 @@ from pathlib import Path
 import os
 import uuid
 
-from speech_delivery import delivery_window, fit_rate
+from speech_delivery import delivery_window, effective_speech_rows, fit_rate
 
 
 @lru_cache(maxsize=4096)
@@ -36,20 +36,33 @@ def cache_items(project, *, entries=None, plans=None, cache_root=None):
     from voices import resolve_voice, audio_identity
     from subtitle_quality import digest
     from core import DATA
-    p, rows = project['params'], project['segments']
+    p = project['params']
+    rows = effective_speech_rows(project['segments'], p)
     plans = plans if plans is not None else [
         delivery_window(row, p, i + 1, project['media']['duration']) for i, row in enumerate(rows)]
+    if len(plans) != len(rows):
+        raise ValueError('Kế hoạch giọng không khớp số câu phụ đề; chưa tạo cache.')
+    # Supplied worker plans must be derived from exactly the same cleaned text.
+    # A mismatch must fail before model resolution or any cache key is created.
+    expected = [delivery_window(row, p, i + 1, project['media']['duration']) for i, row in enumerate(rows)]
+    contract_fields = ('mode', 'text', 'start', 'end', 'available', 'rate',
+                       'pause_before_ms', 'pause_after_ms')
+    if any(any(plan.get(key) != wanted[key] for key in contract_fields)
+           for plan, wanted in zip(plans, expected)):
+        raise ValueError('Kế hoạch giọng khác nội dung hoặc mốc đã làm sạch; cần lập lại trước khi tạo cache.')
     if entries is None:
         resolved = {}
         entries = []
-        for row in rows:
-            if row.get('speech_enabled', True) is False:
+        for row, plan in zip(rows, plans):
+            if not plan['text']:
                 entries.append({'id':'caption-only', 'provider':'none'})
                 continue
             identifier = row.get('voice_id') or p.get('voice_id', 'piper:vais1000')
             if identifier not in resolved:
                 resolved[identifier] = resolve_voice(identifier, require_ready=True)
             entries.append(resolved[identifier])
+    if len(entries) != len(rows):
+        raise ValueError('Danh sách giọng không khớp số câu phụ đề; chưa tạo cache.')
     root = Path(cache_root) if cache_root is not None else DATA / 'speech-cache'
     identities = {}
     items = []

@@ -102,6 +102,34 @@ class StageContractRecoveryTests(unittest.TestCase):
         self.assertEqual(plan['job_id'],child['id'])
         self.assertTrue(plan['can_continue'],plan)
 
+    def test_translation_stage_recovery_never_fills_a_user_edited_blank(self):
+        from stage_journal import record_stage
+        before = copy.deepcopy(self.p)
+        result_rows = copy.deepcopy(self.p['segments'])
+        result_rows[0]['translated'] = 'Bản dịch đã xác nhận từ checkpoint.'
+        folder = self.data/'jobs'/self.model
+        folder.mkdir(exist_ok=True)
+        (folder/'translated.srt').write_text('fixture', encoding='utf-8')
+        result = {'type':'translate', 'segments':result_rows, 'files':['translated.srt'],
+                  'verification':{'fixture':'synthetic translation validated'}}
+        record_stage(self.p, self.p, {'id':self.model}, folder, 'translate', result)
+        current = copy.deepcopy(self.p)
+        current['segments'][0].update(user_edited=True, translated='', spoken_text='Bản tôi tự viết.')
+        recovered, completed = recover(current, folder)
+        self.assertEqual(completed, ['translate'])
+        self.assertEqual(recovered['segments'][0]['translated'], '')
+        self.assertEqual(recovered['segments'][0]['spoken_text'], 'Bản tôi tự viết.')
+        self.assertTrue(recovered['segments'][0]['user_edited'])
+        self.assertEqual(self.p, before)
+
+    def test_translation_lineage_merge_never_fills_a_user_edited_blank(self):
+        from pipeline_resume import _merge_known_translations
+        snapshot = {'segments':[{'start':0., 'end':1., 'text':'Source', 'translated':'',
+                                'user_edited':True}]}
+        saved = [{'start':0., 'end':1., 'text':'Source', 'translated':'Old checkpoint translation'}]
+        self.assertEqual(_merge_known_translations(snapshot, saved), 0)
+        self.assertEqual(snapshot['segments'][0]['translated'], '')
+
     def test_manual_translation_and_model_change_discard_stale_tts_without_overwrite(self):
         row,folder=self.failure()
         changed=copy.deepcopy(self.p);changed['segments'][0]['translated']='Lời tự sửa đầy đủ'

@@ -12,7 +12,14 @@ import re
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ('ARCHITECTURE.md', 'AI_REVIEW_GUIDE.md', 'THIRD_PARTY.md', 'TEST-BOUNDARIES.md')
+DOCS = (
+    'ARCHITECTURE.md',
+    'AI_REVIEW_GUIDE.md',
+    'THIRD_PARTY.md',
+    'TEST-BOUNDARIES.md',
+    'PHASE1-TEXT-REVIEW-RC10.md',
+    'PHASE2-3-TRANSLATION-RELIABILITY-RC10.md',
+)
 EXCLUDED_TESTS = {'quality_smoke.py', 'pipeline_npk.py', 'ui_npk.py'}
 
 
@@ -46,6 +53,9 @@ def export(output):
             content = original
             if protected:
                 content = content.replace(protected, '00000000000000000000000000000001')
+            for local_root in {str(ROOT), str(ROOT).replace('\\', '/')}:
+                content = re.sub(re.escape(local_root), '%NPK_WORKSPACE%', content,
+                                 flags=re.IGNORECASE)
             local_user = re.escape(Path.home().name)
             content = re.sub(r'(?i)([CD]:[\\/]+(?:Users|UserData)[\\/]+)'+local_user+r'\b', r'\1developer', content)
             if source.name == 'setup.ps1':
@@ -60,6 +70,8 @@ def export(output):
     if (-not $basePython) { throw 'Install Python 3.12 x64 or set NPK_BASE_PYTHON.' }
     & $basePython -c 'import sys; assert sys.version_info[:2] == (3, 12), "Python 3.12 required"'
     if ($LASTEXITCODE -ne 0) { throw 'Python 3.12 x64 is required.' }""")
+            # Avoid trailing blank-line noise in generated public diffs.
+            content = content.rstrip('\n') + '\n' if content else content
             normalized = content != original
             if source.suffix == '.py':
                 ast.parse(content, filename=str(relative))
@@ -70,11 +82,12 @@ def export(output):
                          'sha256':hashlib.sha256(dest.read_bytes()).hexdigest(), 'normalized':normalized})
     (output/'PUBLIC_SOURCE_MANIFEST.json').write_text(json.dumps({
         'purpose':'Sanitized first-party source for discussion and review',
-        'snapshot_date':'2026-10-15', 'files':manifest,
+        'snapshot_date':'2026-10-17', 'files':manifest,
         'excluded':['data','models','runtime','build','dist','executables','media',
                     'browser profiles','generated test output','conversation exports',
                     'personal disk inventories','upstream reference checkout','historical package-release.ps1'],
         'normalization':['Local Windows account path becomes developer',
+                         'Absolute workspace checkout path becomes %NPK_WORKSPACE%',
                          'Private protected project ID becomes synthetic 00000000000000000000000000000001',
                          'setup.ps1 discovers Python 3.12 instead of a private absolute path'],
         'license':'No new open-source license grant is implied. See docs/THIRD_PARTY.md.'},

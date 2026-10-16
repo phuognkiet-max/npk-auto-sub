@@ -8,6 +8,7 @@ Repository này là **snapshot mã nguồn có chọn lọc để đọc, thảo
 - HTML/CSS/JavaScript và các tài sản giao diện cần thiết được chọn.
 - Test hợp đồng/fixture code và công cụ kiểm thử/thiết lập đã chọn.
 - README mới, mô tả kiến trúc, hướng dẫn AI review, cách bắt đầu, trạng thái thực tế, ranh giới test và ghi nhận thành phần bên thứ ba.
+- Hai tài liệu RC10 mô tả phạm vi cải tổ văn bản/review và hợp đồng dịch/lời đọc/model/recovery.
 - `PUBLIC_SOURCE_MANIFEST.json` ghi các tệp đã chọn cùng chuẩn hóa dùng cho snapshot.
 
 Việc có installer script trong Git không nghĩa model/runtime tương ứng đã được phân phối cùng. Nội dung tham khảo một engine cũng không chứng minh engine đã được cài hoặc kiểm lại trên máy đọc source.
@@ -27,9 +28,10 @@ Các tệp thiếu theo danh sách trên là chủ ý. Không yêu cầu ngườ
 ## Những chuẩn hóa chỉ áp dụng cho snapshot public
 
 1. Đường dẫn Windows gắn tài khoản máy phát triển được chuyển sang tên mẫu `developer` khi cần giữ hình dạng đường dẫn trong source/test.
-2. ID dự án được bảo vệ trong hợp đồng monitor và các tham chiếu liên quan được thay đồng nhất bằng ID tổng hợp **`00000000000000000000000000000001`**. Đây không phải ID của một dự án có dữ liệu trong Git. Cơ chế monitor chưa tự trở thành cấu hình đa dự án chỉ nhờ thay ID.
-3. `setup.ps1` tìm Python 3.12 qua cấu hình môi trường/lệnh có sẵn thay vì cố định đường dẫn Python của tài khoản phát triển.
-4. README và tài liệu bàn giao được viết cho checkout nguồn độc lập, tránh dẫn người đọc tới hồ sơ nghiệm thu riêng bị loại bỏ.
+2. Đường dẫn tuyệt đối tới thư mục checkout được thay bằng `%NPK_WORKSPACE%`.
+3. ID dự án được bảo vệ trong hợp đồng monitor và các tham chiếu liên quan được thay đồng nhất bằng ID tổng hợp **`00000000000000000000000000000001`**. Đây không phải ID của một dự án có dữ liệu trong Git. Cơ chế monitor chưa tự trở thành cấu hình đa dự án chỉ nhờ thay ID.
+4. `setup.ps1` tìm Python 3.12 qua cấu hình môi trường/lệnh có sẵn thay vì cố định đường dẫn Python của tài khoản phát triển.
+5. README và tài liệu bàn giao được viết cho checkout nguồn độc lập, tránh dẫn người đọc tới hồ sơ nghiệm thu riêng bị loại bỏ.
 
 Những chuẩn hóa này không có nghĩa đã refactor toàn bộ quy tắc vận hành thành sản phẩm đa máy. Cần đọc và kiểm lại cơ chế monitor, owner, vị trí engine và các điều kiện test khi triển khai mới. Không dùng ID mẫu hoặc fixture để sửa hash/metadata nhằm bỏ rào admission trên dữ liệu thật.
 

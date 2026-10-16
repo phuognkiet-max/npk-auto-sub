@@ -125,7 +125,7 @@ class FunctionalTests(unittest.TestCase):
             inputs=json.loads(prompt.split('Input:\n')[1]);calls.append(inputs)
             return json.dumps({'lines':[{'id':i['id'],'text':'Xin chào'} for i in inputs]})
         with tempfile.TemporaryDirectory(dir=DATA) as folder,patch('providers.generate',side_effect=generate):
-            result=translation(p,{},Path(folder));self.assertEqual(len(calls),2);self.assertEqual(calls[0][0]['max_words'],7)
+            result=translation(p,{},Path(folder));self.assertEqual(len(calls),2);self.assertEqual(calls[0][0]['max_words'],10)
             self.assertTrue(all(r['translated'] for r in result['segments']))
         with tempfile.TemporaryDirectory(dir=DATA) as folder,patch('providers.generate',return_value='{"lines":[]}'),patch('worker.time.sleep'):
             with self.assertRaises(ValueError):translation(p,{},Path(folder))

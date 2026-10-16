@@ -2,10 +2,12 @@
 // Guided setup shares the studio's saved project, queue and advanced editors.
 window.NPKSingleVideoSetup = (() => {
   let serial = 0, running = false;
+  const originalGains = new Map();
   const stepNames = {ocr: "Đọc chữ", asr: "Nghe lời thoại", auto_subtitles: "Tự xử lý phụ đề", translate: "Dịch phụ đề", tts: "Tạo giọng", clean: "Xử lý chữ gốc", render: "Xuất video"};
   function continuationPresentation(plan, editorCount = 0) {
     const completed = Array.isArray(plan?.completed_steps) ? plan.completed_steps : [];
     const remaining = Array.isArray(plan?.remaining_steps) ? plan.remaining_steps : [];
+    const preRender = plan?.review_stage === "pre_render", reviewPending = preRender && !plan.approved;
     const selectionPending = plan?.next_action === "continue_auto_subtitles" || remaining.includes("auto_subtitles") &&
       (plan?.recognition_complete === true || completed.some(step => ["ocr", "asr"].includes(step)));
     const rawCount = Number(plan?.recognition_cue_count ?? plan?.recognition_count);
@@ -13,7 +15,7 @@ window.NPKSingleVideoSetup = (() => {
     const checkpointCount = reused + missing > 0 ? reused + missing
       : Number.isInteger(rawCount) && rawCount > 0 ? rawCount : editorCount;
     return {
-      selectionPending,
+      selectionPending, preRender, reviewPending,
       savedText: selectionPending
         ? (Number.isInteger(rawCount) && rawCount > 0 ? `Đã lưu ${rawCount} câu nhận dạng; đang chờ tự chọn nội dung phụ đề.` : "Đã lưu kết quả nhận dạng; bước tự xử lý phụ đề chưa hoàn tất.")
         : checkpointCount > 0 ? `Đã lưu ${checkpointCount} câu phụ đề.${editorCount > 0 && editorCount !== checkpointCount ? ` Bảng biên tập hiện có ${editorCount} câu; kết quả mới nằm trong checkpoint tác vụ.` : ""}` : "",
@@ -22,8 +24,8 @@ window.NPKSingleVideoSetup = (() => {
       reason: plan?.reason || (selectionPending
         ? "Tiếp tục tự xử lý phụ đề từ kết quả nhận dạng đã lưu, rồi chạy các bước còn lại."
         : "Tiếp tục các bước còn lại từ kết quả đã có."),
-      button: plan?.next_action === "continue_auto_subtitles" || selectionPending ? "Tiếp tục tự xử lý phụ đề" : "Tiếp tục các bước còn lại",
-      startedText: selectionPending ? "Đã tiếp tục tự xử lý phụ đề từ kết quả nhận dạng đã lưu." : "Đã tiếp tục các bước còn lại từ bảng phụ đề đã lưu.",
+      button: preRender ? (reviewPending ? "Xem và duyệt để xuất" : "Xuất video đã duyệt") : plan?.next_action === "continue_auto_subtitles" || selectionPending ? "Tiếp tục tự xử lý phụ đề" : "Tiếp tục các bước còn lại",
+      startedText: preRender ? "Đang xuất video từ kết quả đã duyệt." : selectionPending ? "Đã tiếp tục tự xử lý phụ đề từ kết quả nhận dạng đã lưu." : "Đã tiếp tục các bước còn lại từ bảng phụ đề đã lưu.",
     };
   }
   function continuationSubtitleCount(plan, editorCount = 0) {
@@ -33,6 +35,10 @@ window.NPKSingleVideoSetup = (() => {
     if (plan?.job_id && editorCount === 0 && total > 0)
       return `${total} câu trong checkpoint · ${reused} đã dịch, ${missing} cần dịch`;
     return null;
+  }
+  function continuationCanAct(plan) {
+    return plan?.review_stage === "pre_render" && !plan.approved
+      ? plan.can_approve === true : plan?.can_continue === true;
   }
   const presets = {
     clean: {name: "Clean", note: "Rõ ràng · tối giản", font: "Arial", font_size: 46, font_color: "#FFFFFF", outline_color: "#000000", outline: 3, subtitle_shadow: 0, margin: 40, subtitle_background: false, subtitle_bold: false, subtitle_alignment: "bottom", subtitle_karaoke: false},
@@ -74,7 +80,28 @@ window.NPKSingleVideoSetup = (() => {
     find("setupPickDirectory").insertAdjacentHTML("afterend", '<div id="setupFinalResult" class="setup-final-result" hidden></div>');
     find("setupCheck").insertAdjacentHTML("beforebegin", '<div id="setupPipelineState" class="setup-pipeline-state" role="status" hidden></div>');
     find("setupCheck").insertAdjacentHTML("beforebegin", '<div id="setupAdmission" class="warning" role="status" hidden></div>');
+    find("setupExtraction").closest("label").insertAdjacentHTML("afterend", `${toggle("setupTextCleanup", "Làm sạch chữ OCR, gộp câu lặp và mảnh câu trước khi dịch", params.subtitle_text_cleanup)}<small>Giữ bản gốc trong lịch sử và báo cáo để đối chiếu. Câu khác người nói hoặc có lời đọc đã biên tập cần được xem riêng.</small>`);
+    find("setupOutputName").closest("label").insertAdjacentHTML("beforebegin", `${toggle("setupReviewBeforeRender", "Xem và duyệt kết quả trước khi xuất video", params.review_before_render)}<small>Khi bật, quy trình dừng sau chuẩn bị phụ đề, giọng và hình. Bạn chủ động xem, nghe và bấm duyệt để xuất.</small>`);
+    find("setupVoiceFields").insertAdjacentHTML("beforebegin", toggle("setupKeepOriginal", "Giữ âm thanh gốc", params.original_gain > 0));
+    if (params.original_gain > 0) originalGains.set(project.id, Number(params.original_gain));
     find("setupReview").insertAdjacentHTML("afterend", '<button id="setupRecognitionReset" class="link" hidden>Nhận dạng lại từ đầu</button>');
+    find("setupReview").insertAdjacentHTML("afterend", '<button id="setupPrepareAgain" hidden>Chuẩn bị lại sau chỉnh sửa</button>');
+    find("setupPrepareAgain").onclick = guard(async () => {
+      if (running || activeJob()) return;
+      running = true; find("setupPrepareAgain").disabled = true;
+      try {
+        const id = ctx.project().id;
+        change(row => {row.params.pipeline_extract = "existing"; row.params.subtitle_automation = "manual";});
+        find("setupExtraction").value = "existing"; find("setupSubtitleAutomation").value = "manual";
+        await prepare();
+        if (!mounted() || ctx.project()?.id !== id) throw new Error("Video đang mở đã thay đổi. Kiểm tra lại trước khi chuẩn bị.");
+        await queue("pipeline", {replace_segments: true});
+        notice("Đang chuẩn bị lại từ bảng hiện tại. Giữ bản dịch đã có; dùng lại giọng và hình còn khớp. Khi bật duyệt, quy trình sẽ dừng trước khi xuất.");
+      } finally {
+        running = false;
+        if (find("setupPrepareAgain")) {find("setupPrepareAgain").disabled = false; await refresh();}
+      }
+    });
     find("setupReview").insertAdjacentHTML("afterend", '<button id="setupAutoSubtitles" class="primary" hidden>Tự xử lý phụ đề</button>');
     find("setupAutoSubtitles").onclick = guard(async () => {
       if(running || activeJob())return;
@@ -107,6 +134,7 @@ window.NPKSingleVideoSetup = (() => {
     });
     commit("setupClean","use_clean"); commit("setupMethod","method"); commit("setupExtraction","pipeline_extract");
     commit("setupSubtitleAutomation","subtitle_automation");
+    commit("setupTextCleanup","subtitle_text_cleanup"); commit("setupReviewBeforeRender","review_before_render");
     commit("setupTranslate","pipeline_translate"); commit("setupProvider","provider"); commit("setupTarget","target_language");
     commit("setupRouter9BaseUrl","router9_base_url",value=>{
       let endpoint=value.trim().replace(/\/+$/, "");
@@ -117,6 +145,21 @@ window.NPKSingleVideoSetup = (() => {
     commit("setupCaptionFlow","subtitle_flow"); commit("setupChunkWords","subtitle_chunk_words",Number);
     commit("setupTextSource","tts_text_source"); commit("setupExpressive","tts_expressive"); commit("setupVoiceSpeed","voice_speed",Number); commit("setupVoiceGain","voice_gain",Number);
     commit("setupOriginalGain","original_gain",Number); commit("setupOutputName","export_name"); commit("setupOutputDirectory","export_directory");
+    const originalGainChange = find("setupOriginalGain").onchange;
+    find("setupOriginalGain").onchange = guard(async event => {
+      await originalGainChange(event);
+      if (!mounted()) return;
+      const gain = Number(ctx.project().params.original_gain);
+      find("setupKeepOriginal").checked = gain > 0;
+      if (gain > 0) originalGains.set(project.id, gain);
+    });
+    find("setupKeepOriginal").onchange = guard(async event => {
+      const row = ctx.project(), gain = Number(row.params.original_gain);
+      if (gain > 0) originalGains.set(row.id, gain);
+      change(item => item.params.original_gain = event.target.checked ? originalGains.get(row.id) || 1 : 0);
+      find("setupOriginalGain").value = ctx.project().params.original_gain;
+      await refresh();
+    });
     commit("setupResolution","export_resolution");
     find("setupDub").onchange=guard(async event=>{change(row=>{row.params.voice_gain=event.target.checked?1:0;row.params.pipeline_tts=event.target.checked&&!row.params.voice_path;});find("setupVoiceGain").value=ctx.project().params.voice_gain;visibility();await refresh();});
     find("setupQuality").onchange=guard(async event=>{if(event.target.value!=="custom")change(row=>row.params.video_quality=+event.target.value);await refresh();});
@@ -132,7 +175,8 @@ window.NPKSingleVideoSetup = (() => {
     find("setupConnectionEdit").onclick=()=>openArea("settings","connections");
     find("setupAdvancedStyle").onclick=()=>openArea("subtitles","style");
     find("setupPickVoice").onclick=find("setupAudioAdvanced").onclick=()=>openArea("voice");
-    find("setupReview").onclick=()=>openArea("subtitles","quality");
+    find("setupReview").onclick=guard(async()=>continuation?.review_stage === "pre_render"
+      ? ctx.reviewBeforeRender(continuation.job_id) : openArea("subtitles","quality"));
     find("setupExactPreview").onclick=guard(async()=>{const id=ctx.project().id;await save();if(ctx.project()?.id!==id)return;const rows=ctx.project().segments;if(!rows.length)throw new Error("Tạo hoặc nhập phụ đề trước để xem mẫu xuất.");if(!rows.some(row=>row.start<=ctx.time()&&row.end>ctx.time()))ctx.seek(rows[0].start+.01);await queue("subtitle_preview");notice("Đã xếp mẫu phụ đề tại vị trí đang xem.");});
     if(project.artifacts?.render||project.artifacts?.pipeline?.primary_file==="final.mp4"){
       find("setupExactPreview").insertAdjacentHTML("afterend",'<button id="setupStyleExport" title="Dùng lại video sạch và giọng đã tạo; không chạy lại nhận dạng hay dịch">Xuất lại kiểu chữ</button>');
@@ -150,6 +194,11 @@ window.NPKSingleVideoSetup = (() => {
       if(running||activeJob())return;running=true;const button=find("setupRun");button.disabled=true;button.textContent="Đang xếp tác vụ…";
       let rejectedAdmission=null;
       try{
+        if (continuation?.job_id && continuation.review_stage === "pre_render" && !restartRecognition) {
+          if (!continuation.approved) await ctx.reviewBeforeRender(continuation.job_id);
+          else { await ctx.continuePipeline(continuation.job_id); notice("Đang xuất video từ kết quả đã duyệt."); }
+          return;
+        }
         const id=ctx.project().id;await prepare();if(ctx.project()?.id!==id)throw new Error("Video đang mở đã thay đổi. Thiết lập lại trước khi chạy.");const row=ctx.project();
         if(continuation?.job_id && !restartRecognition){
           await ctx.continuePipeline(continuation.job_id);
@@ -199,7 +248,7 @@ window.NPKSingleVideoSetup = (() => {
           if(checkpointCount)find("setupSubtitleCount").textContent=checkpointCount;
         }
         state.className="setup-pipeline-state warning";
-        state.innerHTML=`<strong>Quy trình chưa hoàn tất · Chưa có video thành phẩm</strong><p>${view.savedText ? esc(view.savedText)+" " : ""}${esc(view.reason)}</p><div class="setup-stage-list">${(plan.completed_steps||[]).map(step=>`<span data-stage-state="done">✓ ${esc(stepNames[step]||step)}</span>`).join("")}${(plan.remaining_steps||[]).map(step=>`<span data-stage-state="pending">○ ${esc(stepNames[step]||step)}</span>`).join("")}</div>`;
+        state.innerHTML=`<strong>${view.preRender ? "Đã chuẩn bị xong · Chờ duyệt và xuất video" : "Quy trình chưa hoàn tất · Chưa có video thành phẩm"}</strong><p>${view.savedText ? esc(view.savedText)+" " : ""}${esc(view.reason)}</p><div class="setup-stage-list">${(plan.completed_steps||[]).map(step=>`<span data-stage-state="done">✓ ${esc(stepNames[step]||step)}</span>`).join("")}${(plan.remaining_steps||[]).map(step=>`<span data-stage-state="pending">○ ${esc(stepNames[step]||step)}</span>`).join("")}</div>`;
         if(plan.recovery_job_id&&view.translationText)state.insertAdjacentHTML('beforeend',`<p>${esc(view.translationText)}</p>`);
         find("setupRecognitionReset").hidden=!['ocr','asr'].includes(ctx.project().params.pipeline_extract);
         if(restartRecognition)state.insertAdjacentHTML("beforeend",'<p>Lượt tiếp theo sẽ nhận dạng lại từ đầu theo lựa chọn của bạn.</p>');
@@ -270,6 +319,7 @@ window.NPKSingleVideoSetup = (() => {
         find("setupAdmission").hidden=true;
         find("setupCheck").className="info";find("setupCheck").textContent="Video đang được xử lý. Cấu hình được giữ nguyên cho đến khi tác vụ kết thúc.";
         find("setupRun").textContent="Đang xử lý video…";
+        find("setupPrepareAgain").hidden=true;
         find("setupFinalResult").hidden=true;find("setupReview").hidden=true;find("setupAutoSubtitles").hidden=true;find("setupRecognitionReset").hidden=true;
         find("setupPipelineState").hidden=false;find("setupPipelineState").className="setup-pipeline-state info";
         find("setupPipelineState").innerHTML='<strong>Quy trình đang chạy · Chưa có video mới</strong><p>Theo dõi từng bước trong Tiến trình xử lý. Video thành phẩm sẽ hiện ở đây khi đã kiểm tra và lưu xong.</p>';
@@ -288,21 +338,23 @@ window.NPKSingleVideoSetup = (() => {
         find("setupSpeechState").textContent=staleSpeech?"Cần tạo lại giọng để khớp nội dung đang chọn. Thành phẩm đang xem vẫn dùng giọng đã xuất.":"";
         if(find("setupStyleExport")){find("setupStyleExport").disabled=staleSpeech;find("setupStyleExport").title=staleSpeech?"Bấm Bắt đầu xử lý video để tạo giọng khớp nội dung trước khi xuất lại":"Dùng lại video sạch và giọng đã tạo";}
         const continuing=!!resume.job_id&&!restartRecognition;
-        const admission=continuing?(resume.execution_admission||check.execution_admission):check.execution_admission;
+        const admission=continuing?(resume.execution_admission||(typeof resume.execution_allowed === "boolean" ? resume : check.execution_admission)):check.execution_admission;
+        const preRender=continuing&&resume.review_stage==="pre_render", reviewPending=preRender&&!resume.approved;
+        find("setupPrepareAgain").hidden=!(preRender&&!resume.can_approve);
         const automation=ctx.project().params.subtitle_automation || "manual";
         const canAutomate=automation!=="manual"&&!!quality.automation?.available;
         const messages=continuing?[...(resume.errors||[])]:[...check.errors], review=continuing?!!resume.requires_review:ctx.project().params.pipeline_extract==="existing"&&quality.requires_review&&(ctx.project().params.burn_subtitles||ctx.project().params.voice_gain>0);
         const missingCues=ctx.project().segments.length===0&&ctx.project().params.pipeline_extract==="existing"&&messages.some(message=>message.includes("Chưa có phụ đề"));
         const geminiUnavailable=automation==="gemini"&&messages.some(message=>message.includes("kết nối Gemini")||message.includes("API key Gemini"));
         const offerAutomaticRecognition=!continuing&&(missingCues||geminiUnavailable);
-        if(review&&!canAutomate&&!messages.some(text=>text.includes("kiểm tra phạm vi")))messages.push("Phụ đề cần xem lại trước khi xuất.");
-        if(continuing&&!resume.can_continue&&!messages.length)messages.push(resume.reason||"Chưa thể tiếp tục; kiểm tra phụ đề và cấu hình.");
+        if(review&&!preRender&&!canAutomate&&!messages.some(text=>text.includes("kiểm tra phạm vi")))messages.push("Phụ đề cần xem lại trước khi xuất.");
+        if(continuing&&!resume.can_continue&&!(reviewPending&&resume.can_approve)&&!messages.length)messages.push(resume.reason||"Chưa thể tiếp tục; kiểm tra phụ đề và cấu hình.");
         if(admission?.execution_allowed===false){
           for(let i=messages.length-1;i>=0;i--)if(messages[i]===admission.blocked_reason)messages.splice(i,1);
           find("setupCheck").hidden=!messages.length;
         }
-        find("setupReview").hidden=!review;find("setupCheck").className=messages.length?"warning":"setup-ready";
-        find("setupAutoSubtitles").hidden=!(canAutomate&&(review||quality.errors?.length));
+        find("setupReview").hidden=!review;find("setupReview").textContent=preRender?"Xem và duyệt kết quả":"Kiểm tra phụ đề";find("setupCheck").className=messages.length?"warning":"setup-ready";
+        find("setupAutoSubtitles").hidden=preRender||!(canAutomate&&(review||quality.errors?.length));
         const continuationView=continuationPresentation(resume,ctx.project().segments.length);
         const active=activeJob();find("setupCheck").innerHTML=active?`<span>${icon("video")}Video đang có tác vụ xử lý.</span>`:messages.length?messages.map(text=>`<p>${esc(text)}</p>`).join("")+ (offerAutomaticRecognition?'<button id="setupAutomaticRecognition" class="primary">Tự nhận dạng phụ đề trên máy</button><small>Quét toàn khung video và tự chọn lớp chữ. Dịch vẫn dùng dịch vụ, model và khóa hiện tại; phần chưa rõ sẽ được giữ để xem lại.</small>':""):`<span>${icon("check")}${continuing?"Sẵn sàng tiếp tục các bước còn lại":"Cấu hình sẵn sàng"}</span><small>${continuing?(continuationView.selectionPending?"Dùng kết quả nhận dạng đã lưu · Tự xử lý phụ đề trước":"Dùng phụ đề đã nhận dạng · Không nhận dạng lại"):ctx.project().params.pipeline_extract==="existing"?"Dùng bảng phụ đề hiện có":"Nhận dạng phụ đề trước"} · ${ctx.project().params.use_clean?"Xử lý chữ gốc":"Giữ hình gốc"} · ${ctx.project().params.voice_gain>0?"Có lồng tiếng":"Không lồng tiếng"}</small>`;
         if(find("setupAutomaticRecognition"))find("setupAutomaticRecognition").onclick=guard(async()=>{
@@ -317,7 +369,7 @@ window.NPKSingleVideoSetup = (() => {
         const warnings=continuing?resume.warnings||[]:check.warnings;
         find("setupWarnings").hidden=!warnings.length;find("setupWarnings").querySelector("div").innerHTML=warnings.map(text=>`<p>${esc(text)}</p>`).join("");
         find("setupRun").textContent=continuing?continuationView.button:restartRecognition?"Bắt đầu nhận dạng lại và xử lý video":"Bắt đầu xử lý video";
-        find("setupRun").disabled=running||!!active||messages.length>0;
+        find("setupRun").disabled=running||!!active||messages.length>0||(continuing&&!continuationCanAct(resume));
         showAdmission(admission);
         await showFinalResult(current);
       }catch(error){if(current!==serial||!mounted())return;if(find("setupCheck")){find("setupCheck").className="warning";find("setupCheck").textContent=error.message;}throw error;}
@@ -332,5 +384,5 @@ window.NPKSingleVideoSetup = (() => {
       drop.ondrop=guard(async event=>{event.preventDefault();drop.classList.remove("dragover");const files=[...event.dataTransfer.files];if(files.length!==1)throw new Error("Chọn một video cho mỗi lượt thiết lập.");await ctx.upload(files[0]);});
     }
   }
-  return {render, continuationPresentation, continuationSubtitleCount, stepNames};
+  return {render, continuationPresentation, continuationSubtitleCount, continuationCanAct, stepNames};
 })();

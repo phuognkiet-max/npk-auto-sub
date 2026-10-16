@@ -33,10 +33,13 @@ DEFAULTS = {
     "mask_source": "manual",
     "voice_id": "piper:vais1000", "tts_require_translation": True,
     "tts_timing_mode": "natural", "tts_auto_schedule": False, "tts_text_source": "translated", "tts_expressive": False,
+    "subtitle_text_cleanup": False, "review_before_render": False,
     "tts_device": "auto", "pronunciation_dictionary": "",
     "voice_normalize": False, "bgm_ducking": False, "subtitle_karaoke": False,
     "subtitle_preset": "clean", "subtitle_bold": False,
     "ocr_confidence": .55, "ocr_similarity": .84,
+    # Stored generic preference; translation_quality applies the Vietnamese
+    # syllable floor (4.8) without silently changing saved project settings.
     "translation_batch": 20, "words_per_second": 3.6,
     "cover_color": "#000000", "blur_radius": 16, "stretch_height": 12, "stretch_direction": "above",
     "cover_opacity": 1.0, "edge_feather": 0, "stretch_offset": 0, "inpaint_radius": 5,
@@ -179,10 +182,42 @@ def probe(path):
 
 def create_project(path, name=""):
     media = probe(path)
+    # Workflow changes apply to new projects. Loading an older snapshot must
+    # never silently reinterpret its captions, speech cache or export policy.
+    params = settings() | {'subtitle_text_cleanup': True, 'review_before_render': True}
     item = {"id": uuid.uuid4().hex, "name": name.strip() or Path(path).stem,
-            "media": media, "regions": [], "extraction_regions": [], "segments": [], "params": settings(),
+            "media": media, "regions": [], "extraction_regions": [], "segments": [], "params": params,
             "created": time.time(), "updated": time.time(), "artifacts": {}}
     return put("project", item["id"], item)
+
+
+def prepare_project_text(project, *, stage='source', selected_indices=None):
+    """Prepare an isolated draft; the caller commits it as an authored revision.
+
+    The report retains pre-cleaning rows and source-index mapping. No provider,
+    voice, model, store write or image processing is performed by this helper.
+    """
+    import copy
+    draft = copy.deepcopy(project)
+    rows = draft.get('segments', [])
+    if not draft.get('params', {}).get('subtitle_text_cleanup', False):
+        return draft, {'version': 1, 'segments': copy.deepcopy(rows), 'changes': [],
+                       'source_indices': [[index] for index in range(len(rows))],
+                       'input_count': len(rows), 'output_count': len(rows),
+                       'needs_review': False, 'review_reasons': []}
+    if stage == 'speech':
+        # Match worker/preflight selection exactly. Generic fallback to an
+        # edited script must not silently override the chosen source.
+        from speech_delivery import speech_cleanup_report
+        report = speech_cleanup_report(rows, draft['params'], selected_indices=selected_indices)
+    else:
+        from clean_timing import prepare_subtitle_segments
+        report = prepare_subtitle_segments(rows, stage=stage, selected_indices=selected_indices)
+    draft['segments'] = report['segments']
+    if report['changes']:
+        from speech_word_alignment import prune_stale_timings
+        prune_stale_timings(draft)
+    return draft, report
 
 def safe_owned(path, parent=DATA):
     resolved, root = Path(path).resolve(), parent.resolve()

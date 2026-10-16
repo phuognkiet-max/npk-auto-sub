@@ -20,7 +20,17 @@ LINEAGE_NAME = 'api-usage-lineage.sqlite3'
 _IDENTITY = ('schema_version', 'root_id', 'project_id', 'source_identity', 'source_revision',
              'provider', 'target_language', 'endpoint')
 _RECORD_KEYS = {'ordinal', 'at', 'cue_count', 'first_cue', 'last_cue', 'prompt_bytes', 'attempt',
-                'http_status', 'elapsed_seconds', 'quota_scope', 'retry_after', 'usage', 'lineage_ordinal'}
+                'http_status', 'elapsed_seconds', 'quota_scope', 'retry_after', 'usage', 'lineage_ordinal',
+                'configured_model', 'response_model', 'response_model_status',
+                'response_model_matches_configured'}
+
+
+def _model_id(value):
+    from providers import safe_model
+    try:
+        return isinstance(value, str) and safe_model(value) == value
+    except ValueError:
+        return False
 
 
 def _valid_id(value):
@@ -42,6 +52,15 @@ def _validate_records(records):
                     for key in ('http_status','elapsed_seconds','retry_after') if key in record) or
                 ('lineage_ordinal' in record and (type(record['lineage_ordinal']) is not int or record['lineage_ordinal'] < 1))):
             raise ValueError('Nhật ký lượt gửi API bị lỗi; giữ checkpoint và chưa gọi dịch tiếp.')
+        if (any(not _model_id(record[key]) for key in ('configured_model', 'response_model') if key in record) or
+                ('response_model_status' in record and record['response_model_status'] not in ('missing', 'invalid', 'reported')) or
+                ('response_model' in record and record.get('response_model_status') != 'reported') or
+                (record.get('response_model_status') == 'reported' and 'response_model' not in record) or
+                ('response_model_matches_configured' in record and
+                 (type(record['response_model_matches_configured']) is not bool or
+                  'configured_model' not in record or 'response_model' not in record or
+                  record['response_model_matches_configured'] != (record['configured_model'] == record['response_model'])))):
+            raise ValueError('Nhật ký danh tính model không hợp lệ; giữ checkpoint và chưa gọi dịch tiếp.')
     return records
 
 
@@ -62,7 +81,26 @@ def _ledger(path, provider, model, endpoint=None):
         if saved.get('endpoint') != router_base_url(endpoint):
             raise ValueError('Endpoint 9Router đã đổi; không dùng lại budget hoặc nhật ký của kết nối khác.')
     _validate_records(records)
+    if any(record.get('configured_model', model) != model for record in records):
+        raise ValueError('Model đã cấu hình không khớp nhật ký lượt gửi; không tự đổi model trong tác vụ.')
     return saved
+
+
+def _model_summary(records, configured_model):
+    """Bounded public provenance; complete per-attempt history stays in requests."""
+    reported = sorted({record['response_model'] for record in records if 'response_model' in record})
+    fields = ('ordinal', 'attempt', 'http_status', 'configured_model', 'response_model',
+              'response_model_status', 'response_model_matches_configured')
+    result = {'configured_model': configured_model, 'response_models': reported[:100],
+        'response_model_count': len(reported),
+        'response_model_reported_requests': sum('response_model' in record for record in records),
+        'response_model_missing_requests': sum('response_model' not in record for record in records),
+        'model_mismatch_requests': sum(record.get('response_model_matches_configured') is False for record in records),
+        'model_provenance': [{key: record[key] for key in fields if key in record} for record in records[-100:]],
+        'model_provenance_total': len(records), 'model_provenance_truncated': len(records) > 100}
+    if records and 'response_model' in records[-1]:
+        result['response_model'] = records[-1]['response_model']
+    return result
 
 
 def _jobs_root(value):
@@ -502,7 +540,8 @@ def read_summary(folder):
     try:
         if path.is_symlink() or path.stat().st_size > 8 * 1024**2:
             return None
-        data = json.loads(path.read_text(encoding='utf-8'))['summary']
+        document = json.loads(path.read_text(encoding='utf-8'))
+        data = document['summary']
         counts = ('request_attempts', 'request_limit', 'baseline_requests', 'responses_received',
                   'usage_reported_requests', 'usage_unknown_requests', 'completed_cues',
                   'lineage_request_attempts', 'lineage_request_limit', 'lineage_remaining_requests', 'history_unknown_jobs',
@@ -512,6 +551,8 @@ def read_summary(folder):
         result['reported_tokens'] = {key: tokens[key] for key in USAGE_KEYS
                                     if type(tokens.get(key)) is int and tokens[key] >= 0}
         result['cost_verification'] = 'unverified'
+        if _model_id(document.get('model')) and isinstance(document.get('requests'), list):
+            result.update(_model_summary(_validate_records(document['requests']), document['model']))
         return result
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
         return None
@@ -525,6 +566,7 @@ class TranslationUsage:
         self.limit = baseline + max(4, math.ceil(baseline * .25))
         self.records = []
         self.provider, self.model = provider, model
+        self._configured_model = model
         self.endpoint = None
         if provider == 'router9':
             from providers import router_base_url
@@ -568,6 +610,7 @@ class TranslationUsage:
                 'cost_verification': 'unverified'}
         if self.lineage is not None:
             result.update(self.lineage.summary())
+        result.update(_model_summary(self.records, self._configured_model))
         return result
 
     def persist(self):
@@ -590,13 +633,19 @@ class TranslationUsage:
 
     def observe(self, event):
         phase = event.get('event')
+        if (self.model != self._configured_model or
+                event.get('configured_model', self._configured_model) != self._configured_model):
+            from providers import ProviderError
+            raise ProviderError('model_changed', 'Model của yêu cầu đã đổi giữa tác vụ. Dừng trước khi gửi tiếp; giữ checkpoint và chọn lại đúng model.',
+                                output_reason='configured_model_changed')
         if phase == 'before_send':
             if self.lineage is None and len(self.records) >= self.limit:
                 from providers import ProviderError
                 raise ProviderError('budget', f'Đã dùng {len(self.records)}/{self.limit} lượt gửi API trong tác vụ này; '
                     f'kế hoạch ban đầu là {self.baseline} lượt. Dừng để bảo vệ quota, giữ {self.completed} câu đã dịch. '
                     'Kiểm tra phản hồi, kích thước nhóm và hạn mức trước khi tiếp tục.')
-            record = {'ordinal': len(self.records) + 1, 'at': time.time(), **self.batch, 'attempt': event['attempt']}
+            record = {'ordinal': len(self.records) + 1, 'at': time.time(), **self.batch, 'attempt': event['attempt'],
+                      'configured_model': self._configured_model, 'response_model_status': 'missing'}
             if self.lineage is not None:
                 record = self.lineage.reserve(self.job_id, record)
             self.records.append(record)
@@ -615,6 +664,21 @@ class TranslationUsage:
             values = event.get('usage') or {}
             self.records[-1]['usage'] = {key: values[key] for key in USAGE_KEYS
                                         if type(values.get(key)) is int and values[key] >= 0}
+        elif phase == 'model_provenance' and self.records:
+            record = self.records[-1]
+            if event.get('attempt') != record['attempt']:
+                raise ValueError('Phản hồi model không thuộc lượt gửi đang theo dõi; chưa áp dụng kết quả.')
+            status = event.get('response_model_status', 'missing')
+            if status not in ('missing', 'invalid', 'reported'):
+                raise ValueError('Trạng thái model phản hồi không hợp lệ.')
+            if status == 'reported':
+                value = event.get('response_model')
+                if not _model_id(value):
+                    raise ValueError('Model phản hồi không có danh tính hợp lệ.')
+                record.update(response_model=value, response_model_status=status,
+                              response_model_matches_configured=value == self._configured_model)
+            else:
+                record['response_model_status'] = status
         else:
             return
         if self.lineage is not None and phase != 'before_send':

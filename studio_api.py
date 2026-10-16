@@ -158,6 +158,7 @@ def translation_original_input(row, project):
             original_job.get('kind') != row['kind'] or
             original_job.get('project_id') != row.get('project_id') or
             original_job.get('segment_indices') != row.get('segment_indices') or
+            original_job.get('overwrite_user_edits', False) != row.get('overwrite_user_edits', False) or
             original.get('source_revision') != project.get('source_revision') or
             source_signature(original) != source_signature(project)):
         raise ValueError('Bản dịch dở không thuộc snapshot video hiện tại; không tự áp dụng.')
@@ -183,7 +184,8 @@ def translation_retry_indices(row, project):
         indices = list(range(len(rows)))
     if (not isinstance(indices, list) or any(type(index) is not int or not 0 <= index < len(rows) for index in indices)):
         raise ValueError('Không xác minh được phạm vi dịch trước; chọn lại các câu cần dịch.')
-    missing = sorted({index for index in indices if not current[index].get('translated', '').strip()})
+    missing = sorted({index for index in indices if not current[index].get('translated', '').strip() and
+        (current[index].get('user_edited') is not True or row.get('overwrite_user_edits') is True)})
     if not missing:
         raise ValueError('Các câu thuộc lượt dịch trước đã có bản dịch. Không tự dịch lại hoặc ghi đè câu đã sửa.')
     return missing
@@ -198,7 +200,8 @@ def translation_restore_candidates(row, project):
     if checkpoint.parent != folder:
         raise ValueError('Checkpoint dịch nằm ngoài thư mục tác vụ.')
     document = read_checkpoint(checkpoint)
-    rows = validated_partial_rows(document, original, row.get('segment_indices'))
+    rows = validated_partial_rows(document, original, row.get('segment_indices'),
+                                  overwrite_user_edits=row.get('overwrite_user_edits') is True)
     if isinstance(document, dict):
         # Other rows may contain translations that existed BEFORE this job.
         # Only completed_indices prove this job actually translated the cue.
@@ -216,7 +219,7 @@ def translation_restore_candidates(row, project):
     if len(rows) == len(current) and all(identity(saved) == identity(cue) for saved, cue in zip(rows, current)):
         # Exact ordering preserves the selected row even when identities repeat.
         return [(index, text) for index, text in sorted(confirmed.items())
-                if not current[index].get('translated', '').strip()]
+                if not current[index].get('translated', '').strip() and current[index].get('user_edited') is not True]
     from collections import Counter
     saved_counts = Counter(identity(cue) for cue in rows)
     current_counts = Counter(identity(cue) for cue in current)
@@ -228,7 +231,8 @@ def translation_restore_candidates(row, project):
                              'Không xác định được câu thuộc phạm vi dịch cũ; cần kiểm tra thủ công.')
         values[key] = text
     return [(index, values[key]) for index, cue in enumerate(current)
-            if not cue.get('translated', '').strip() and (key := identity(cue)) in values]
+            if not cue.get('translated', '').strip() and cue.get('user_edited') is not True and
+            (key := identity(cue)) in values]
 
 
 def install(app):
@@ -919,6 +923,66 @@ def install(app):
                     pipeline_tts=False)
             return save_project_version(project,before)
 
+    def latest_pre_render_review(project):
+        return max((row for row in all_items('job') if row.get('project_id') == project['id'] and
+            row.get('source_revision') == project.get('source_revision') and row.get('kind') == 'pipeline' and
+            row.get('state') == 'review' and (row.get('result') or {}).get('review_stage') == 'pre_render'),
+            key=lambda row: row.get('created', 0), default=None)
+
+    def pre_render_plan(project):
+        from pipeline_resume import pre_render_review_status, pre_render_continuation_status
+        row = latest_pre_render_review(project)
+        if row:
+            plan = pre_render_continuation_status(row, project, all_items('job'), DATA/'jobs'/row['id'])
+        else:
+            plan = pre_render_review_status(project) | {'can_approve': False, 'can_continue': False,
+                'completed_steps': [], 'errors': [], 'warnings': [], 'next_action': 'prepare_before_review',
+                'reason': 'Chạy chuẩn bị phụ đề, lời đọc và xử lý hình trước khi xem và duyệt bản xuất.'}
+        # The review must show the same selected/cleaned narration the worker
+        # signs and caches, not a JavaScript approximation of raw captions.
+        # This is a pure derivation: displayed captions and authored roles stay
+        # intact, and no inference, credential access or provider is needed.
+        from speech_delivery import effective_speech_rows, spoken_text
+        try:
+            narration = effective_speech_rows(project.get('segments', []), project['params'])
+            plan['narration'] = []
+            for index, cue in enumerate(narration):
+                text = spoken_text(cue, project['params'])
+                plan['narration'].append({'index': index, 'text': text,
+                    'enabled': cue.get('speech_enabled', True) is not False and bool(text)})
+        except (ValueError, TypeError, KeyError) as error:
+            plan.update(narration=[], can_approve=False, can_continue=False, requires_review=True,
+                        reason=str(error))
+            plan['errors'] = list(dict.fromkeys(plan.get('errors', []) + [str(error)]))
+        return plan
+
+    @app.get('/api/studio/projects/{identifier}/pre-render-review')
+    def pre_render_review(identifier: str):
+        with s.state_lock:
+            return pre_render_plan(s.project_by_id(identifier))
+
+    @app.post('/api/studio/projects/{identifier}/pre-render-review')
+    def approve_pre_render_review(identifier: str, body: dict):
+        """Record an explicit user decision; this endpoint never queues work."""
+        with s.state_lock:
+            s.require_owner_instance(body)
+            project = s.project_by_id(identifier)
+            if body.get('approved') is not True or body.get('automatic') is True:
+                raise HTTPException(400, 'Cần thao tác duyệt rõ ràng sau khi đã xem và nghe kết quả.')
+            if body.get('expected_revision') != project['updated']:
+                raise HTTPException(409, 'Dự án đã thay đổi; tải lại và kiểm tra kết quả hiện tại trước khi duyệt.')
+            plan = pre_render_plan(project)
+            if body.get('signature') != plan['signature'] or body.get('job_id') != plan.get('job_id'):
+                raise HTTPException(409, 'Kết quả chuẩn bị đã thay đổi; xem và duyệt đúng phiên bản hiện tại.')
+            if not plan.get('enabled') or not plan.get('can_approve'):
+                raise HTTPException(409, plan['reason'])
+            before = copy.deepcopy(project)
+            project['pre_render_review'] = {'schema_version': 1, 'approved': True,
+                'signature': plan['signature'], 'job_id': plan['job_id'], 'approved_at': time.time()}
+            project['updated'] = max(time.time(), before['updated'] + .000001)
+            saved = save_project_version(project, before)
+            return pre_render_plan(saved) | {'project': saved}
+
     def continuation_plan(row, project):
         from pipeline_resume import continuation_status
         jobs = all_items('job')
@@ -997,7 +1061,12 @@ def install(app):
                 raise HTTPException(400 if plan['requires_review'] or plan['errors'] else 409, plan['reason'])
             from pipeline_resume import prepare_continuation
             snapshot, root_id, recovered_id, selected = prepare_continuation(row, project, jobs, DATA/'jobs'/identifier)
-            snapshot['segments'] = s.validate_segments(snapshot['segments'], snapshot['media']['duration'])
+            validated = s.validate_segments(snapshot['segments'], snapshot['media']['duration'])
+            if plan.get('review_stage') != 'pre_render':
+                snapshot['segments'] = validated
+            # A reviewed final-render snapshot must remain byte-for-byte the
+            # semantic table the user approved, including track IDs and other
+            # metadata that the generic editor's whitelist does not serialize.
             from execution_admission import require_admission
             require_admission(snapshot, jobs, kind='pipeline', automatic=body.get('automatic') is True)
             request = {'kind': 'pipeline', 'project_id': project['id'],
@@ -1005,6 +1074,8 @@ def install(app):
                                  'request_id': body.get('request_id', '')}
             if body.get('automatic') is True:
                 request['automatic'] = True
+            if 'overwrite_user_edits' in body:
+                request['overwrite_user_edits'] = body['overwrite_user_edits']
             if selected is not None:
                 request['segment_indices'] = selected
             return s.create_job(request, project_override=snapshot, continuation_from=root_id, recovery_from=recovered_id)
@@ -1044,7 +1115,8 @@ def install(app):
                     from translation_checkpoint import read_checkpoint, validate_resume, validate_pipeline_resume
                     project = s.project_by_id(row['project_id'])
                     validate = validate_pipeline_resume if row['kind'] == 'pipeline' and project['params'].get('pipeline_extract') in ('ocr', 'asr') else validate_resume
-                    validate(read_checkpoint(checkpoint), project, row.get('segment_indices'))
+                    validate(read_checkpoint(checkpoint), project, row.get('segment_indices'),
+                             overwrite_user_edits=row.get('overwrite_user_edits') is True)
                     row['can_resume'] = True
                 except (ValueError, OSError, HTTPException):
                     row['can_resume'] = False

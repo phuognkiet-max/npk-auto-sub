@@ -8,9 +8,9 @@ Chữ N màu cam, khoảng âm gợi nút phát, hai vạch phụ đề màu sá
 
 Hình được tạo bằng **imagegen tích hợp trong Codex**, không dùng API key của người dùng. File master là kết quả gốc, giữ kênh alpha. Chỉ thu nhỏ và mã hóa ICO để đóng gói, không vẽ lại bằng mã.
 
-- Master: `D:\App\VietDubStudio\assets\branding\npk-auto-sub-master.png` — RGBA 1254 × 1254.
-- Icon Windows: `D:\App\VietDubStudio\static\npk-app-icon.ico` — 16, 20, 24, 32, 40, 48, 64, 96, 128 và 256 px.
-- Logo giao diện: `D:\App\VietDubStudio\static\npk-app-icon.png` — RGBA 256 × 256.
+- Master: `%NPK_WORKSPACE%\assets\branding\npk-auto-sub-master.png` — RGBA 1254 × 1254.
+- Icon Windows: `%NPK_WORKSPACE%\static\npk-app-icon.ico` — 16, 20, 24, 32, 40, 48, 64, 96, 128 và 256 px.
+- Logo giao diện: `%NPK_WORKSPACE%\static\npk-app-icon.png` — RGBA 256 × 256.
 - Master SHA-256: `DC275E1EE626D6FD23D2D3E4B0A45620AD9946135D68344B28C35840B9800174`.
 
 ## Tích hợp
@@ -24,9 +24,9 @@ Không sửa Python dùng chung, registry, danh sách ghim taskbar hay khởi đ
 
 ## Sử dụng
 
-Lưu dự án rồi đóng và mở lại `D:\App\VietDubStudio\NPK Auto Sub.exe` để nhận icon cửa sổ mới. Nếu taskbar vẫn có mục Python đã ghim từ trước, bỏ ghim mục cũ và ghim lại NPK sau khi mở bản mới. Việc ghim và mở lại từ taskbar chưa được kiểm thử trực tiếp; đường dẫn và thuộc tính Windows đã được đọc lại trong cửa sổ thử.
+Lưu dự án rồi đóng và mở lại `%NPK_WORKSPACE%\NPK Auto Sub.exe` để nhận icon cửa sổ mới. Nếu taskbar vẫn có mục Python đã ghim từ trước, bỏ ghim mục cũ và ghim lại NPK sau khi mở bản mới. Việc ghim và mở lại từ taskbar chưa được kiểm thử trực tiếp; đường dẫn và thuộc tính Windows đã được đọc lại trong cửa sổ thử.
 
-Bản EXE trước thay đổi được giữ tại `D:\App\VietDubStudio\build\icon-release\backup\NPK Auto Sub-before-icon.exe`. Đây là bản sao EXE, không phải bản sao đầy đủ mã nguồn trước thay đổi.
+Bản EXE trước thay đổi được giữ tại `%NPK_WORKSPACE%\build\icon-release\backup\NPK Auto Sub-before-icon.exe`. Đây là bản sao EXE, không phải bản sao đầy đủ mã nguồn trước thay đổi.
 
 ## Kiểm chứng
 
@@ -40,7 +40,7 @@ Báo cáo: `tests/icon-results/native-report.json`, `tests/studio-results/browse
 
 ## Tái tạo tài nguyên / build
 
-Chạy trong `D:\App\VietDubStudio` bằng PowerShell:
+Chạy trong `%NPK_WORKSPACE%` bằng PowerShell:
 
 ```powershell
 & '.\runtime\venv\Scripts\python.exe' '.\tools\build-app-icon.py'

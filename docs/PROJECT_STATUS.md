@@ -1,33 +1,25 @@
 # Trạng thái thực tế của dự án
 
+Đồng bộ mã nguồn công khai **17/10/2026**: cập nhật RC10 với ba đợt làm sạch OCR/credit/lời đọc, ngân sách âm tiết tiếng Việt và chuẩn hóa dữ kiện Trung–Việt, bộ nhớ thuật ngữ xuyên batch, partial retry, model provenance và bảo toàn chỉnh sửa tay. Chi tiết nằm trong [Đợt 1](PHASE1-TEXT-REVIEW-RC10.md) và [Đợt 2–3](PHASE2-3-TRANSLATION-RELIABILITY-RC10.md). Việc đồng bộ này chưa tạo hoặc nghiệm thu thêm video.
+
 Cập nhật **16/10/2026**: đã sửa lỗi gọi lại API vì JSON fence, sửa định dạng JSON của 9Router có giới hạn và ngữ cảnh khi chỉ dịch câu còn trống. Thêm **Kiểm tra lời đọc** cục bộ với preview và chủ động chọn từng gợi ý, để xử lý nhóm lặp/dòng ghi nguồn mà không sửa caption hoặc vùng xóa chữ. Chi tiết và giới hạn tại [API-TRANSLATION-FOCUS-2026-10-16](API-TRANSLATION-FOCUS-2026-10-16.md). Chưa tạo video mới hoặc xác minh lexical toàn bộ trong lượt cập nhật này.
 
-Phiên bản source được chia sẻ là **NPK Auto Sub 0.8.5 RC9**, kèm thay đổi tự bố trí lời đọc ngày **15/10/2026**. Dự án đang phát triển; đây chưa phải sản phẩm đã nghiệm thu chất lượng chung, bộ cài portable hoặc bản phát hành đã kiểm lại trên máy sạch.
+Phiên bản source được chia sẻ là **NPK Auto Sub 0.8.5 RC10**, kèm thay đổi tự bố trí lời đọc ngày **15/10/2026**. Dự án đang phát triển; đây chưa phải sản phẩm đã nghiệm thu chất lượng chung, bộ cài portable hoặc bản phát hành đã kiểm lại trên máy sạch.
 
-## Đã có một ca chạy trọn quy trình
+## Trạng thái video thực
 
-Trong môi trường Windows đã chuẩn bị model/runtime, một video thực đã đi hết pipeline và xuất được MP4. Các số dưới đây là kết quả của ca đó, không phải benchmark áp dụng cho mọi video.
+Theo trạng thái và ảnh người dùng chia sẻ ngày **15/10/2026**, video dài 11 phút 35 giây có 381 câu đã dịch nhưng lượt tiếp tục dừng ở bước kiểm tra timing giọng đọc; ít nhất ba câu chưa thỏa giới hạn tự nhiên và cần xử lý/review. Chưa có thành phẩm video cuối được xác minh cho lượt này. Vì vậy kho này không khẳng định công cụ đã hoàn tất ổn định một video thực.
 
-| Nội dung | Kết quả |
-| --- | --- |
-| Thời lượng thành phẩm | 695,369 giây, khoảng 11 phút 35 giây |
-| Nội dung phụ đề/dịch | 381 câu |
-| Hình và âm thanh | H.264 1280×720, AAC stereo 48 kHz |
-| Kiểm kỹ thuật bản cuối | Giải mã 20.859 khung hình; bản xuất khớp hash với bản đã kiểm |
-| Tái sử dụng ở lượt ghép cuối | Đủ 381 đoạn raw speech cache; không OCR/dịch lại |
-| Tổng raw speech trước căn | Khoảng 793,83 giây |
-| Tempo sau tổng hợp trong tự bố trí | Giới hạn tối đa 1,25× |
-| Độ lệch lời đọc lớn nhất quan sát | Khoảng 10,81 giây so với mốc phụ đề |
-| Mốc từ | 167 câu qua alignment; 214 câu dùng nhịp ước lượng |
-| Xác minh nội dung phát âm | `lexical_verification: unverified` |
-
-Không kèm video, audio hoặc hồ sơ dự án của ca này trong source public. Vì vậy người chỉ clone repository không có đủ bằng chứng media để tái nghiệm thu ca riêng đó. Các số tổng hợp ở đây cho thấy đã có thành phẩm thật, đồng thời công khai những giới hạn chưa được giải quyết.
+Các bài test pipeline/browser dùng media tổng hợp và kiểm tra hợp đồng xử lý. Chúng không thay thế việc chạy toàn bộ video thật, nghe/đọc duyệt bản dịch và lời đọc, rồi xác minh MP4 cuối. Không có video, audio hoặc hồ sơ dự án người dùng trong source public.
 
 ## Phần đã được đưa vào source
 
 - Snapshot job tách khỏi dự án đang chỉnh sửa; revision giúp ngăn kết quả cũ ghi đè nội dung mới.
 - Checkpoint OCR/dịch và journal từng bước, dùng lại phần hoàn tất khi tiếp tục hợp lệ.
 - Phân biệt model đang nhập, model backend đã lưu và model của job đang chạy; kiểm hợp đồng trước request tiếp theo sau đổi cấu hình.
+- Làm sạch handle/credit dùng chung, ngăn đọc rác OCR, gộp câu lặp và đánh dấu đoạn nguồn không phải lời thoại; xem lại lời đọc trước khi render.
+- Ngân sách lời đọc tiếng Việt theo âm tiết, so khớp số/đơn vị Trung–Việt và truyền glossary tên riêng có chứng cứ xuyên các batch.
+- Lưu câu hợp lệ ngay trong batch, chỉ retry ID lỗi/thiếu; ghi nhận model đã cấu hình và model response; mặc định không ghi đè câu sửa tay.
 - Ledger lượt gửi/usage và budget dùng chung qua continuation; đổi model/key không tự tạo allowance mới.
 - Scheduler theo provider/endpoint: một request đang gửi và cách nhau ít nhất 12 giây giữa các lần bắt đầu của NPK; bằng chứng quota bền qua restart.
 - Đo raw audio, cache theo nội dung/giọng/tốc độ và kiểm âm thanh sau căn; tự bố trí là tùy chọn riêng, mặc định tắt để giữ hành vi cũ.

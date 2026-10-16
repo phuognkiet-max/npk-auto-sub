@@ -273,6 +273,10 @@ def validate_segments(rows, duration):
                 raise ValueError(f'{label} phải là văn bản không quá 10.000 ký tự; nội dung chưa được lưu hoặc cắt bớt.')
             content[key] = value
         clean.append({'start': start, 'end': min(end, duration), **content})
+        if 'user_edited' in row:
+            if type(row['user_edited']) is not bool:
+                raise ValueError('Dấu nội dung đã biên tập phải là lựa chọn bật hoặc tắt.')
+            clean[-1]['user_edited'] = row['user_edited']
         # Missing keeps the legacy spoken-cue role; an explicit false preserves
         # text for display/translation while excluding it from AI dubbing.
         if 'speech_enabled' in row:
@@ -592,6 +596,9 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
     with state_lock:
         from storage_manager import _ensure_no_pending
         _ensure_no_pending()
+        if 'overwrite_user_edits' in body and (type(body['overwrite_user_edits']) is not bool or
+                body.get('kind') not in {'translate', 'pipeline', 'optimize_spoken'}):
+            raise ValueError('Chỉ thao tác dịch hoặc tinh chỉnh lời đọc mới được chọn ghi đè nội dung đã biên tập bằng giá trị bật/tắt rõ ràng.')
         request_id = str(body.get('request_id',''))[:128]
         if request_id:
             previous_request = get('job_request', request_id)
@@ -599,12 +606,16 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                 previous_job = get('job', previous_request['job_id'])
                 expected_project = {'voice_preview': 'voice-preview', 'text_to_speech': 'text-to-speech', 'enroll_voice': 'voice-enrollment'}.get(body.get('kind'), body.get('project_id'))
                 if previous_job and previous_job['project_id']==expected_project and previous_job['kind']==body.get('kind'):
+                    if previous_job.get('overwrite_user_edits', False) != body.get('overwrite_user_edits', False):
+                        raise ValueError('Mã yêu cầu đã dùng cho lựa chọn ghi đè khác; không tự đổi quyền sửa nội dung.')
                     if continuation_from and previous_job.get('continuation_from') != continuation_from:
                         raise ValueError('Mã yêu cầu đã dùng cho quy trình khác. Tải lại trước khi tiếp tục.')
                     return previous_job
                 raise ValueError('Mã yêu cầu đã dùng cho thao tác khác.')
         kind = body.get('kind')
         provider_steps = None
+        text_preparation = None
+        editor_before_preparation = None
         if kind not in TASKS:
             raise ValueError('Tác vụ không được hỗ trợ.')
         if kind == 'enroll_voice':
@@ -696,6 +707,33 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                 # The trusted continuation endpoint prepares this job-local
                 # clone. The editor keeps its full OCR/ASR workflow choice.
                 project = project_override
+            # Canonicalize new existing-table work before freezing provider
+            # identities. A continuation/retry must retain the exact historical
+            # cue identities validated by its checkpoint, rather than silently
+            # merging another table into that lineage.
+            if (kind in {'translate', 'pipeline'} and project_override is None and
+                    not any(body.get(key) for key in ('resume_from', 'retry_from')) and
+                    project['params'].get('subtitle_text_cleanup') is True and
+                    (kind != 'pipeline' or project['params'].get('pipeline_extract', 'existing') == 'existing')):
+                selected = body.get('segment_indices')
+                if selected is not None and (not isinstance(selected, list) or not selected or
+                        any(type(i) is not int or not 0 <= i < len(project['segments']) for i in selected)):
+                    raise ValueError('Danh sách câu được chọn không hợp lệ.')
+                from core import prepare_project_text
+                draft, text_preparation = prepare_project_text(project, stage='source', selected_indices=selected)
+                # Validate authored fields without serializing the entire
+                # existing table through the editor whitelist. Track IDs and
+                # metadata outside the selected rows must survive unchanged.
+                validate_segments(draft['segments'], draft['media']['duration'])
+                if selected is not None:
+                    remapped = [i for i, origins in enumerate(text_preparation['source_indices'])
+                                if origins and all(index in selected for index in origins)]
+                    if not remapped:
+                        raise ValueError('Các câu đã chọn không còn nội dung sau làm sạch; kiểm tra bảng phụ đề trước khi dịch.')
+                    body = dict(body, segment_indices=remapped)
+                if draft['segments'] != project['segments']:
+                    editor_before_preparation = json.loads(json.dumps(project))
+                    project = draft
             # Idempotent request IDs protect retries of one HTTP request. A
             # second click has a new ID, so production admission must also own
             # a semantic project lease independently of the UI/history list.
@@ -721,6 +759,9 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                 if any(j.get('project_id') == project['id'] and j.get('kind') in {'asr','ocr','pipeline'} and
                        j.get('state') in {'queued','running'} for j in all_items('job')):
                     raise HTTPException(409, 'Dự án đang có lượt nhận dạng hoặc xuất. Chờ hoàn tất hoặc hủy lượt trước.')
+            if kind == 'render':
+                from pipeline_resume import require_pre_render_approval
+                require_pre_render_approval(project)
             if float(project['params'].get('extraction_start',0)) >= float(project['params'].get('extraction_end') or project['media']['duration']):
                 raise ValueError('Khoảng nhận dạng phải có điểm kết thúc lớn hơn bắt đầu.')
             from execution_admission import require_admission
@@ -743,7 +784,8 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                'configuration': {key: project['params'].get(key) for key in ('method', 'workload_mode', 'mask_source', 'max_side',
                    'voice_id','provider','translation_model','video_encoder','pipeline_extract','pipeline_translate','pipeline_tts','pipeline_clean',
                    'tts_device','voice_speed','pronunciation_dictionary','tts_timing_mode','tts_auto_schedule','tts_text_source','tts_expressive','asr_compute',
-                   'voice_normalize','bgm_ducking','subtitle_karaoke','subtitle_preset','subtitle_automation')}}
+                   'voice_normalize','bgm_ducking','subtitle_karaoke','subtitle_preset','subtitle_automation',
+                   'review_before_render', 'subtitle_text_cleanup')}}
         if project['params'].get('provider') == 'router9' or project['params'].get('subtitle_automation') == 'router9':
             from providers import router_base_url
             job['configuration']['router9_base_url'] = router_base_url(project['params'].get('router9_base_url'))
@@ -751,6 +793,8 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
             from artifact_resolver import admission_fingerprint, render_fingerprint
             job['admission_fingerprint'] = admission_fingerprint(project, kind, body.get('segment_indices'))
             job['render_input_fingerprint'] = render_fingerprint(project)
+        if 'overwrite_user_edits' in body:
+            job['overwrite_user_edits'] = body['overwrite_user_edits']
         if continuation_from:
             job['continuation_from'] = continuation_from
             prior_result = get('job', continuation_from).get('result', {})
@@ -794,6 +838,8 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                     previous.get('project_id') != project['id'] or previous.get('kind') != kind or
                     previous.get('state') not in ('error', 'cancelled')):
                 raise ValueError('Không có lượt dịch dở tương ứng để thử lại đúng phạm vi.')
+            if previous.get('overwrite_user_edits', False) != body.get('overwrite_user_edits', False):
+                raise ValueError('Lựa chọn ghi đè đã đổi so với lượt dịch trước. Xác nhận đúng lựa chọn hoặc bắt đầu lượt mới.')
             from studio_api import translation_retry_indices
             retry_indices = translation_retry_indices(previous, project)
             if 'segment_indices' in job and job['segment_indices'] != retry_indices:
@@ -865,7 +911,10 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
             else:
                 from translation_checkpoint import read_checkpoint, validate_resume, validate_pipeline_resume
                 validate = validate_pipeline_resume if kind == 'pipeline' and project['params'].get('pipeline_extract') in ('ocr', 'asr') else validate_resume
-                validate(read_checkpoint(checkpoint), project, job.get('segment_indices'))
+                if previous.get('overwrite_user_edits', False) != body.get('overwrite_user_edits', False):
+                    raise ValueError('Tiếp tục checkpoint cần giữ đúng lựa chọn ghi đè đã xác nhận; không tự mở quyền ghi đè.')
+                validate(read_checkpoint(checkpoint), project, job.get('segment_indices'),
+                         overwrite_user_edits=job.get('overwrite_user_edits') is True)
             folder.mkdir()
             shutil.copyfile(checkpoint,folder/filename)
             if filename == 'recognition-checkpoint.json':
@@ -892,6 +941,21 @@ def _create_job_locked(body: dict, *, project_override=None, continuation_from=N
                 if decision_cache.is_file() and decision_cache.stat().st_size <= 1024*1024:
                     shutil.copyfile(decision_cache, folder/'subtitle-automation.json')
                 job['automation_evidence_job_id'] = evidence_job['id']
+        if text_preparation is not None:
+            from translation_checkpoint import write_document
+            write_document(folder/'text-preparation-source.json', text_preparation)
+            job['text_preparation_file'] = 'text-preparation-source.json'
+            job['text_preparation'] = {'file': 'text-preparation-source.json',
+                'input_count': text_preparation['input_count'], 'output_count': text_preparation['output_count'],
+                'change_count': len(text_preparation.get('changes', []))}
+        if editor_before_preparation is not None:
+            # All request, provider, preflight, checkpoint and evidence checks
+            # have passed. Only now commit the canonical table as a version the
+            # editor can inspect/undo; a rejected request never edits its rows.
+            project['updated'] = max(time.time(), editor_before_preparation['updated'] + .000001)
+            project.pop('pre_render_review', None)
+            save_project_version(project, editor_before_preparation)
+            job['project_revision'] = project['updated']
         (folder / 'input.json').write_text(json.dumps({'project': project, 'job': job}, ensure_ascii=False, indent=2), encoding='utf-8')
         saved = put('job', identifier, job)
         if request_id:
@@ -1047,6 +1111,13 @@ def attach_completed_result(job, result):
     if job['kind'] == 'pipeline':
         for name, value in result.get('artifacts', {}).items():
             project['artifacts'][name] = value | {'job_id': value.get('job_id', job['id'])}
+        if result.get('review_stage') == 'pre_render':
+            # Only the preparation stage's effective clean choice is applied;
+            # approval can be written exclusively by the explicit review API.
+            prepared = result.get('prepared_params') or {}
+            if type(prepared.get('use_clean')) is bool:
+                project['params']['use_clean'] = prepared['use_clean']
+            project.pop('pre_render_review', None)
     if 'segments' in result and job['kind'] != 'optimize_spoken':
         project['segments'] = result['segments']
         if result.get('coverage'):
@@ -1169,7 +1240,9 @@ def _worker_loop_run():
                         review = bool(result.get('needs_review'))
                         current.update(state='review' if review else 'done', stage='review' if review else 'done',
                             progress=current.get('progress',0) if review else 1,
-                            message='Cần kiểm tra phụ đề trước khi tiếp tục' if review else 'Đã xử lý xong · cần xem/nghe để duyệt', result=result)
+                            message=('Đã chuẩn bị xong · xem/nghe và duyệt trước khi xuất video'
+                                if result.get('review_stage') == 'pre_render' else 'Cần kiểm tra phụ đề trước khi tiếp tục')
+                                if review else 'Đã xử lý xong · cần xem/nghe để duyệt', result=result)
                         if job.get('standalone'):
                             if result.get('voice_id'):
                                 put('voice_test',result['voice_id'],{'ok':True,'checked_at':time.time(),'job_id':job['id']})

@@ -44,7 +44,7 @@ class TranslationIntegrityTests(unittest.TestCase):
             self.assertIn(translated, (Path(tmp) / 'translated.srt').read_text(encoding='utf-8-sig'))
         self.assertEqual(len(prompts), 1)
         self.assertIn('advisory reading-time estimates, not output limits', prompts[0])
-        self.assertIn('Never drop words or shorten content to satisfy them', prompts[0])
+        self.assertIn('Never omit facts or meaning to force a timing estimate', prompts[0])
         self.assertIn('forms of address, repetitions, emphasis, slang', prompts[0])
         self.assertEqual(result['segments'][0]['translated'], translated)
         self.assertEqual(result['segments'][0]['spoken_text'], 'Lời đọc riêng đã duyệt.')

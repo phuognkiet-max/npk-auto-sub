@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from translation_quality import effective_words_per_second
 
 
 def digest(value):
@@ -73,7 +74,7 @@ def inspect_subtitles(project, require_translation=False):
             add('line_budget',f'Câu {i+1}: vượt số dòng mong muốn. Chia câu hoặc tăng chiều dài dòng; không tự cắt bỏ chữ.',index=i,start=start,end=end)
         if 2*style.get('subtitle_margin_x',40)>=project['media'].get('width',1920) or style.get('margin',40)+style.get('font_size',46)>project['media'].get('height',1080):
             add('unsafe_position',f'Câu {i+1}: lề/cỡ chữ có thể đưa phụ đề ra khỏi khung hình.','error',i,start,end)
-        if text and len(text.split()) / max(.05, end-start) > float(project['params'].get('words_per_second', 3.6)):
+        if text and len(text.split()) / max(.05, end-start) > effective_words_per_second(project['params']):
             add('reading', f'Câu {i+1}: nhiều chữ trong thời gian ngắn; nghe kiểm tra nhịp đọc và điều chỉnh mốc nếu cần. Nội dung được giữ đầy đủ.', index=i, start=start, end=end)
         if len(text) > 110 and not single:
             add('line_length', f'Câu {i+1}: nhiều chữ, cần xem lại cách xuống dòng.', index=i, start=start, end=end)

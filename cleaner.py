@@ -3,6 +3,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 from performance import profile_for
+from subtitle_text import sanitize_subtitle_text, subtitle_text_info
 
 def bounds(region, width, height):
     x, y, w, h = [float(region[k]) for k in ("x", "y", "w", "h")]

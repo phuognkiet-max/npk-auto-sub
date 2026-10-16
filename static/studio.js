@@ -114,6 +114,7 @@ function guard(fn) {
 let modalResolve = null,
   modalOrigin = null;
 function closeModal(value = false) {
+  $('#modalBody').querySelectorAll('video,audio').forEach(media => media.pause());
   $("#modal").close();
   modalResolve?.(value);
   modalResolve = null;
@@ -1461,7 +1462,7 @@ function renderPanel() {
 }
 function renderSetup() {
   setupController = window.NPKSingleVideoSetup.render({panel, escape: esc, icon, api, change, save, queue, notice, guard, clock,
-    project: () => P, catalog: () => catalog, jobs: () => jobs, mediaUrl, time: () => video.currentTime || 0, seek, previewStyle, continuePipeline: continuePausedPipeline,
+    project: () => P, catalog: () => catalog, jobs: () => jobs, mediaUrl, time: () => video.currentTime || 0, seek, previewStyle, continuePipeline: continuePausedPipeline, reviewBeforeRender: preRenderReviewDialog,
     openArea: (next, tab) => { if (next === "subtitles" && tab) subtab = tab; if (next === "settings" && tab) settingsTab = tab; setArea(next); },
     externalVoice: () => { setArea("voice"); $("#voiceSource").value = "external"; renderExternalVoice(); },
     importSubtitles: () => $("#subtitleFile").click(), importVideo,
@@ -2690,6 +2691,8 @@ async function continuePausedPipeline(identifier) {
     throw new Error("Cấu hình vừa thay đổi. Lưu và kiểm tra lại trước khi tiếp tục.");
   if (plan.project_id !== projectId || plan.expected_revision !== revision)
     throw new Error("Quy trình không còn khớp dự án đang mở. Tải lại trước khi tiếp tục.");
+  if (plan.review_stage === 'pre_render' && !plan.approved)
+    return preRenderReviewDialog(identifier);
   if (!plan.can_continue) {
     if (plan.requires_review) { subtab = "quality"; setArea("subtitles"); setProgressExpanded(false); }
     throw new Error((plan.errors || []).join("\n") || plan.reason || "Chưa thể tiếp tục các bước còn lại.");
@@ -2703,6 +2706,63 @@ async function continuePausedPipeline(identifier) {
   await poll();
   if (!$("#progressDetails").hidden) await showJob(job.id);
   return job;
+}
+async function preRenderReviewDialog(identifier) {
+  if (activeProjectPipeline()) throw new Error('Video đang có tác vụ. Chờ hoàn tất trước khi xem và duyệt.');
+  await save();
+  if (!P) return;
+  const id = P.id, version = editVersion, revision = P.updated;
+  const report = await api('/api/studio/projects/' + id + '/pre-render-review');
+  const unchanged = () => P?.id === id && !dirty && !saving && editVersion === version && P.updated === revision;
+  if (!unchanged() || report.expected_revision !== revision || report.project_id !== id)
+    throw new Error('Nội dung đã đổi; mở lại bước xem và duyệt để lấy đúng phiên bản hiện tại.');
+  if (identifier && report.job_id !== identifier)
+    throw new Error('Đã có kết quả chuẩn bị khác. Mở Thiết lập & chạy để xem lượt mới nhất.');
+  if (!report.can_approve) throw new Error(report.reason || 'Cần chuẩn bị lại nội dung hiện tại trước khi duyệt.');
+  if (!Array.isArray(report.narration) || report.narration.length !== P.segments.length ||
+      report.narration.some((row, index) => !row || row.index !== index || typeof row.text !== 'string' ||
+        typeof row.enabled !== 'boolean' || row.enabled && !row.text.trim()))
+    throw new Error('Chưa có bản đối chiếu lời đọc chính xác cho toàn bộ bảng. Tải lại ứng dụng và mở lại bước xem kết quả.');
+  const p = P.params, clean = p.use_clean && P.artifacts?.clean, voice = P.artifacts?.tts;
+  const picture = clean ? '/media/job/' + encodeURIComponent(clean.job_id) + '/clean.mp4'
+    : '/media/source/' + encodeURIComponent(id);
+  const audio = p.voice_gain > 0 ? (p.voice_path ? '/media/external/' + encodeURIComponent(id) + '/voice'
+    : voice ? '/media/job/' + encodeURIComponent(voice.job_id) + '/voice.wav' : null) : null;
+  const rows = P.segments.slice(0, 300).map((row, index) => `<tr><td>${index + 1}<br>${esc(clock(row.start))}–${esc(clock(row.end))}</td><td>${esc(row.text || '')}</td><td>${esc(row.translated || '')}</td><td data-pre-render-narration="${index}">${report.narration[index].enabled ? esc(report.narration[index].text) : 'Không lồng tiếng'}</td></tr>`).join('');
+  const openEditor = (tab) => {
+    if (!unchanged()) throw new Error('Nội dung đã đổi; lưu và mở lại bước xem kết quả.');
+    closeModal(); setProgressExpanded(false);
+    if (tab === 'voice') setArea('voice');
+    else { subtab = 'content'; setArea('subtitles'); }
+  };
+  openModal('Xem và duyệt trước khi xuất', `<p>Các bước chuẩn bị đã hoàn tất. Xem câu gốc, bản dịch, nội dung được đọc và nghe âm thanh trước khi chủ động xuất video.</p><div class="info"><p>${P.segments.length} câu · Ngôn ngữ đích: ${esc(p.target_language || '')}</p><p>Âm thanh gốc: ${p.original_gain > 0 ? 'Bật · ' + esc(p.original_gain) : 'Tắt'} · Lồng tiếng: ${p.voice_gain > 0 ? 'Bật · ' + esc(p.voice_gain) : 'Tắt'} · Phụ đề hiển thị: ${p.burn_subtitles ? 'Bật' : 'Tắt'}</p></div><details><summary>Xem hình ${clean ? 'đã xử lý vùng chữ' : 'nguồn'} trước khi ghép</summary><video controls muted preload="none" style="max-width:100%;max-height:38vh" src="${esc(mediaUrl(picture))}"></video><p class="muted">Đây là hình trước khi ghép phụ đề và âm thanh. Dùng trình biên tập để xem chữ và nghe phối âm theo cấu hình.</p></details>${audio ? `<label>Nghe bản giọng đã chuẩn bị<audio controls preload="none" style="width:100%" src="${esc(mediaUrl(audio))}"></audio></label><small>Đây là giọng riêng. Nút Nghe phối âm mở video cùng giọng, âm nguồn và nhạc theo lựa chọn hiện tại.</small>` : ''}<details><summary>Đối chiếu lời gốc, bản dịch và lời đọc</summary><table><thead><tr><th>Câu / Mốc</th><th>Lời gốc</th><th>Bản dịch</th><th>Lồng tiếng</th></tr></thead><tbody>${rows}</tbody></table>${P.segments.length > 300 ? '<p>Mở trình biên tập để xem đủ các câu còn lại.</p>' : ''}</details><p class="muted">Sửa nội dung, giọng, timing hoặc cấu hình sẽ làm quyết định cũ hết hiệu lực. Chỉ xuất từ kết quả vừa được duyệt; không tự dịch hoặc tạo giọng lại.</p><label class="check"><input id="preRenderHumanApproval" type="checkbox">Tôi đã xem phụ đề, kiểm tra lời đọc và đồng ý xuất phiên bản này.</label>`, [
+    {label: 'Đóng', run: () => closeModal()},
+    {label: 'Mở trình biên tập', run: () => openEditor('subtitles')},
+    {label: 'Nghe phối âm', run: async () => {
+      openEditor('voice');
+      if (!mixEnabled) await toggleMix();
+      notice('Bấm phát video để nghe phối âm; quay lại Thiết lập & chạy để duyệt khi đã kiểm tra xong.');
+    }},
+    {label: 'Duyệt và xuất video', primary: true, run: async () => {
+      if (!$('#preRenderHumanApproval')?.checked) throw new Error('Chọn xác nhận sau khi đã xem và nghe kết quả, hoặc đóng để chỉnh sửa thêm.');
+      if (!unchanged()) throw new Error('Nội dung đã đổi; mở lại bước xem và duyệt trước khi xuất.');
+      const result = await api('/api/studio/projects/' + id + '/pre-render-review', {
+        expected_revision: revision, signature: report.signature, job_id: report.job_id, approved: true});
+      if (P?.id !== id) { closeModal(); return; }
+      if (dirty || saving || editVersion !== version || P.updated !== revision) {
+        conflict = true; closeModal();
+        notice('Quyết định đã được lưu cho phiên bản trước. Bản đang chỉnh được giữ; tải lại để đối chiếu trước khi xuất.', true);
+        return;
+      }
+      if (!result.project || result.project.id !== id || result.project.updated !== result.expected_revision)
+        throw new Error('Chưa xác minh được phiên bản sau khi duyệt. Tải lại dự án trước khi xuất.');
+      P = result.project; quality = null; editVersion++; selected.clear();
+      closeModal(); renderPanel(); drawCaption(); updateUndo(); $('#saved').textContent = 'Đã lưu';
+      if (!result.approved || !result.can_continue) throw new Error(result.reason || 'Kết quả đã thay đổi sau khi duyệt; kiểm tra lại trước khi xuất.');
+      await continuePausedPipeline(report.job_id);
+      notice('Đang xuất video đã duyệt. Giữ phụ đề, bản dịch, giọng và hình đã chuẩn bị.');
+    }},
+  ]);
 }
 function cleanSlider(key, label, min, max, step = 1, unit = "px", scale = 1) {
   const value = Number(P.params[key]);
@@ -4502,7 +4562,7 @@ function renderPreferences() {
 }
 function renderHelp() {
   $("#settingsBody").innerHTML =
-    `<div class="card"><h3>NPK Auto Sub · 0.8.5 RC9</h3><p>1. Tạo hoặc nhập phụ đề.<br>2. Dịch và kiểm tra nội dung.<br>3. Chọn giọng, xem thử cách xử lý chữ.<br>4. Xuất video và duyệt thành phẩm.</p><p class="muted">Video chỉ xử lý chữ chưa có phụ đề mới hay lồng tiếng. Nút “Mở video thành phẩm” mở đúng bản đã ghép cuối. Mục Tạo giọng hỗ trợ kịch bản nhiều đoạn, nhiều giọng và thư viện bản đọc.</p></div><details><summary>Thông tin xử lý trên máy</summary><p>Ứng dụng dùng máy chủ nội bộ chỉ nghe ở 127.0.0.1; đây không phải địa chỉ tải video lên mạng. Dịch phụ đề và gợi ý rút gọn gọi nhà cung cấp đã chọn. Nhận dạng, xử lý chữ, giọng Việt, waveform và gợi ý nhóm người nói chạy cục bộ.</p><div id="engineNotes"></div></details><details><summary>Giới hạn cần biết</summary><p>Phục hồi nền không bảo đảm giống nền gốc hoặc hết nhấp nháy. Gợi ý nhóm người nói cần nghe lại; phân tích nhịp dựa trên năng lượng và khoảng lặng chưa tự hiểu cảm xúc. Tách giọng/nhạc UVR là tùy chọn offline CPU; cần nghe lại hai stem trước khi dùng. Nhạc hoặc lời chồng nhau có thể làm giảm chất lượng.</p></details><button id="diagnostics">Xem chẩn đoán tác vụ</button><p class="muted">Không gửi key hoặc dữ liệu dự án cho bộ phận hỗ trợ khi chưa kiểm nội dung.</p>`;
+    `<div class="card"><h3>NPK Auto Sub · 0.8.5 RC10</h3><p>1. Tạo hoặc nhập phụ đề.<br>2. Dịch và kiểm tra nội dung.<br>3. Chuẩn bị giọng, hình và kiểm tra lời đọc.<br>4. Xem, nghe và duyệt kết quả rồi mới xuất video.<br>5. Kiểm tra lại video thành phẩm.</p><p class="muted">Video chỉ xử lý chữ chưa có phụ đề mới hay lồng tiếng. Nút “Mở video thành phẩm” mở đúng bản đã ghép cuối. Mục Tạo giọng hỗ trợ kịch bản nhiều đoạn, nhiều giọng và thư viện bản đọc.</p></div><details><summary>Thông tin xử lý trên máy</summary><p>Ứng dụng dùng máy chủ nội bộ chỉ nghe ở 127.0.0.1; đây không phải địa chỉ tải video lên mạng. Dịch phụ đề và gợi ý rút gọn gọi nhà cung cấp đã chọn. Nhận dạng, xử lý chữ, giọng Việt, waveform và gợi ý nhóm người nói chạy cục bộ.</p><div id="engineNotes"></div></details><details><summary>Giới hạn cần biết</summary><p>Phục hồi nền không bảo đảm giống nền gốc hoặc hết nhấp nháy. Gợi ý nhóm người nói cần nghe lại; phân tích nhịp dựa trên năng lượng và khoảng lặng chưa tự hiểu cảm xúc. Tách giọng/nhạc UVR là tùy chọn offline CPU; cần nghe lại hai stem trước khi dùng. Nhạc hoặc lời chồng nhau có thể làm giảm chất lượng.</p></details><button id="diagnostics">Xem chẩn đoán tác vụ</button><p class="muted">Không gửi key hoặc dữ liệu dự án cho bộ phận hỗ trợ khi chưa kiểm nội dung.</p>`;
   $("#engineNotes").innerHTML = (catalog?.engines?.items || [])
     .map(
       (r) =>
@@ -4592,6 +4652,17 @@ function jobEndedLabel(job) {
   const time = new Date(timing.ended*1000).toLocaleString('vi-VN',{hour12:false});
   return (job.state === 'error' ? 'Dừng do lỗi lúc ' : job.state === 'cancelled' ? 'Đã hủy lúc ' : 'Kết thúc lúc ') + time + '.';
 }
+function jobModelProvenance(usage) {
+  if (!usage || typeof usage.configured_model !== 'string') return '';
+  const reported = Array.isArray(usage.response_models)
+    ? usage.response_models.filter(value=>typeof value==='string').slice(0,100) : [];
+  const models = reported.length ? reported.map(esc).join(', ') : 'Dịch vụ chưa báo model trong phản hồi';
+  const missing = Number.isInteger(usage.response_model_missing_requests) && usage.response_model_missing_requests>0
+    ? ` · ${esc(usage.response_model_missing_requests)} lượt chưa có model phản hồi` : '';
+  const mismatch = Number.isInteger(usage.model_mismatch_requests) && usage.model_mismatch_requests>0
+    ? '<p class="warning" data-model-mismatch>Tên model phản hồi khác model đã cấu hình. Có thể là tên đích của router; hãy đối chiếu ánh xạ trước lượt tiếp theo.</p>' : '';
+  return `<p data-job-model-provenance>Model đã cấu hình: ${esc(usage.configured_model)} · Model dịch vụ báo: ${models}${missing}.</p>${mismatch}`;
+}
 function jobDiagnostics(job) {
   const timing = jobTimingInfo(job), stopped = jobEndedLabel(job), label = jobTimingLabel(job);
   const usage = job.api_usage, requests = usage && Number.isInteger(usage.request_attempts) && Number.isInteger(usage.request_limit)
@@ -4600,11 +4671,12 @@ function jobDiagnostics(job) {
     ? `<p data-job-api-lineage="true">${usage.history_unknown_jobs>0?'Đã đo được':'Đã ghi nhận'} ${esc(usage.lineage_request_attempts)}/${esc(usage.lineage_request_limit)} lượt API của quy trình.${usage.history_unknown_jobs>0?' Lịch sử các lượt cũ chưa đầy đủ; chưa xác nhận tổng số lượt.':' Chạy tiếp dùng chung ngân sách này.'}</p>` : '';
   const cueCounts = usage && ['reused_cues','newly_completed_cues','remaining_cues'].every(key=>Number.isInteger(usage[key])&&usage[key]>=0)
     ? `<p data-job-translation-counts="true">${esc(usage.reused_cues)} câu dùng lại · ${esc(usage.newly_completed_cues)} câu dịch mới · ${esc(usage.remaining_cues)} câu còn thiếu.</p>` : '';
+  const modelReceipt = jobModelProvenance(usage);
   const source = P && P.id === job.project_id && (P.source_revision||null) === (job.source_revision||null) ? P.media?.duration : null;
   const lastProgress = ['error','cancelled'].includes(job.state) ? `Tiến độ ghi nhận trước khi dừng: ${Math.max(0,Math.min(100,Math.round((Number(job.progress)||0)*100)))}%.` : '';
   const incomplete = job.kind === 'pipeline' && job.state === 'review';
   const stage = ['error','cancelled'].includes(job.state) ? jobFailureStage(job) : null;
-  return `<section role="status" data-job-status="${esc(job.state)}" class="${job.state==='error'||incomplete?'warning':'info'}"><strong>${incomplete?'Quy trình tạm dừng · Chưa có video thành phẩm':esc(stateNames[job.state] || job.state)}${timing.terminal?' · Không còn xử lý':''}</strong>${stage?`<p data-job-failure-stage="${esc(stage.id)}">Dừng ở bước: ${esc(stage.name)}.</p>`:''}${job.configuration?.translation_model ? `<p data-job-connection>${esc(connectionContractText(job.configuration))}</p>` : ""}<p data-job-identity>Tác vụ ${esc(job.id)}${job.created ? " · Tạo lúc " + esc(new Date(job.created * 1000).toLocaleString("vi-VN")) : ""}</p>${requests}${cumulative}${cueCounts}${label?`<p>${esc(label)}.</p>`:''}${stopped?`<p>${esc(stopped)}</p>`:''}${lastProgress?`<p>${esc(lastProgress)}</p>`:''}${Number.isFinite(source)?`<p>Độ dài video nguồn: ${esc(processingDuration(source))}. Đây là thời lượng video, khác với thời gian xử lý.</p>`:''}</section>`;
+  return `<section role="status" data-job-status="${esc(job.state)}" class="${job.state==='error'||incomplete?'warning':'info'}"><strong>${incomplete?'Quy trình tạm dừng · Chưa có video thành phẩm':esc(stateNames[job.state] || job.state)}${timing.terminal?' · Không còn xử lý':''}</strong>${stage?`<p data-job-failure-stage="${esc(stage.id)}">Dừng ở bước: ${esc(stage.name)}.</p>`:''}${job.configuration?.translation_model ? `<p data-job-connection>${esc(connectionContractText(job.configuration))}</p>` : ""}<p data-job-identity>Tác vụ ${esc(job.id)}${job.created ? " · Tạo lúc " + esc(new Date(job.created * 1000).toLocaleString("vi-VN")) : ""}</p>${requests}${cumulative}${cueCounts}${modelReceipt}${label?`<p>${esc(label)}.</p>`:''}${stopped?`<p>${esc(stopped)}</p>`:''}${lastProgress?`<p>${esc(lastProgress)}</p>`:''}${Number.isFinite(source)?`<p>Độ dài video nguồn: ${esc(processingDuration(source))}. Đây là thời lượng video, khác với thời gian xử lý.</p>`:''}</section>`;
 }
 function jobFailureStage(job) {
   const names = window.NPKSingleVideoSetup?.stepNames || {ocr:'Đọc chữ',asr:'Nghe lời thoại',auto_subtitles:'Tự xử lý phụ đề',translate:'Dịch phụ đề',tts:'Tạo giọng',clean:'Xử lý chữ gốc',render:'Xuất video'};
@@ -4700,18 +4772,22 @@ async function showJob(id) {
     }
     if(plan.recovery_job_id&&view.translationText)explanation.insertAdjacentHTML('beforeend',`<p>${esc(view.translationText)}</p>`);
     $("#jobDetails .row").before(explanation);
-    const resume=document.createElement('button');resume.id='continuePipelineCurrent';resume.className='primary';resume.textContent=view.button;resume.disabled=!plan.can_continue;
+    const canAct=window.NPKSingleVideoSetup.continuationCanAct(plan);
+    const resume=document.createElement('button');resume.id='continuePipelineCurrent';resume.className='primary';resume.textContent=view.button;resume.disabled=!canAct;
     resume.onclick=guard(async()=>{
       resume.disabled=true;
       try{
         if(P?.id!==j.project_id)await loadProject(j.project_id);
-        await continuePausedPipeline(j.id);
-        notice(view.startedText);
-      }finally{if(resume.isConnected)resume.disabled=!plan.can_continue;}
+        if(plan.review_stage==='pre_render'&&!plan.approved)await preRenderReviewDialog(j.id);
+        else {await continuePausedPipeline(j.id);notice(view.startedText);}
+      }finally{if(resume.isConnected)resume.disabled=!canAct;}
     });
     $("#jobDetails .row").prepend(resume);
     if($("#retryCurrent"))$("#retryCurrent").hidden=true;
-    if($("#reviewCurrent"))$("#reviewCurrent").classList.toggle('primary',!plan.can_continue);
+    if($("#reviewCurrent")) {
+      $("#reviewCurrent").hidden=plan.review_stage==='pre_render';
+      $("#reviewCurrent").classList.toggle('primary',!plan.can_continue);
+    }
   }
   if (j.state === 'done' && j.result?.primary_file === 'final.mp4') {
     const path = j.result.published?.path;
@@ -4784,6 +4860,11 @@ async function showJob(id) {
     });
   if ($("#reviewCurrent"))
     $("#reviewCurrent").onclick = guard(async () => {
+      if (j.result?.review_stage === 'pre_render') {
+        if (P?.id !== j.project_id) await loadProject(j.project_id);
+        await preRenderReviewDialog(j.id);
+        return;
+      }
       await loadProject(j.project_id);
       subtab = "quality";
       setArea("subtitles");

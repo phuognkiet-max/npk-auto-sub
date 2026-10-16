@@ -35,6 +35,9 @@ def translation_signature(project, segment_indices=None):
     source = source_signature(project) if media.get('path') and 'duration' in media else media
     rows = [{key: row.get(key, '') for key in ('start','end','text','translated','spoken_text','words')}
             for row in project.get('segments', [])]
+    if any('user_edited' in row for row in project.get('segments', [])):
+        for saved, original in zip(rows, project.get('segments', [])):
+            saved['user_edited'] = original.get('user_edited', False)
     value = {'version': VERSION, 'source': source, 'rows': rows,
              'params': translation_params(project),
              'selected': None if segment_indices is None else sorted(set(segment_indices))}
@@ -90,6 +93,26 @@ def _validate_rows(rows):
             value = row.get(key, '')
             if not isinstance(value, str) or len(value) > 10000 or '\x00' in value:
                 raise ValueError('Checkpoint dịch có nội dung câu không hợp lệ.')
+        if 'user_edited' in row and type(row['user_edited']) is not bool:
+            raise ValueError('Cờ bảo vệ sửa tay trong checkpoint dịch không hợp lệ.')
+
+
+def connection_identity(project):
+    params = project['params']
+    identity = {'provider': params.get('provider'), 'model': params.get('translation_model'),
+                'target_language': params.get('target_language')}
+    if params.get('provider') == 'router9':
+        from providers import router_base_url
+        identity['endpoint'] = router_base_url(params.get('router9_base_url'))
+    return identity
+
+
+def eligible_translation_indices(project, segment_indices=None, *, overwrite_user_edits=False):
+    selected = set(range(len(project.get('segments', [])))) if segment_indices is None else set(segment_indices)
+    return [i for i, row in enumerate(project.get('segments', [])) if i in selected and
+            (overwrite_user_edits or row.get('user_edited') is not True) and
+            (overwrite_user_edits and row.get('user_edited') is True or
+             project['params'].get('translation_scope') != 'missing' or not row.get('translated', '').strip())]
 
 
 def read_checkpoint(path):
@@ -110,12 +133,18 @@ def read_checkpoint(path):
         raise ValueError('Không đọc được checkpoint dịch. Giữ dự án hiện tại và dùng bản checkpoint hợp lệ khác.') from exc
 
 
-def validate_resume(document, project, segment_indices=None):
+def validate_resume(document, project, segment_indices=None, *, overwrite_user_edits=False):
     rows = checkpoint_rows(document)
     _finite_document(document)
     _validate_rows(rows)
     if not isinstance(document, dict) or document.get('schema_version') != VERSION:
         raise ValueError('Checkpoint cũ chỉ hỗ trợ áp dụng bản dịch dở; hãy áp dụng rồi dịch các câu còn thiếu.')
+    if document.get('connection') is not None and document['connection'] != connection_identity(project):
+        raise ValueError('Model, nhà cung cấp, endpoint hoặc ngôn ngữ đích của checkpoint khác cấu hình hiện tại. '
+                         'Giữ phần đã dịch và chọn rõ cách tiếp tục; không trộn kết quả từ model khác.')
+    if (type(document.get('overwrite_user_edits', False)) is not bool or
+            document.get('overwrite_user_edits', False) != overwrite_user_edits):
+        raise ValueError('Quyền ghi đè sửa tay của checkpoint khác lựa chọn hiện tại; xác nhận lại phạm vi trước khi tiếp tục.')
     if document.get('signature') != translation_signature(project, segment_indices):
         raise ValueError('Checkpoint không khớp video, phụ đề hoặc cấu hình dịch hiện tại. '
                          'Áp dụng phần dịch dở rồi chọn dịch câu còn thiếu; không tự dịch lại toàn bộ.')
@@ -124,14 +153,15 @@ def validate_resume(document, project, segment_indices=None):
             any(type(i) is not int or not 0 <= i < len(rows) for i in completed) or
             len(completed) != len(set(completed))):
         raise ValueError('Danh sách câu đã dịch trong checkpoint không hợp lệ.')
-    selected = set(range(len(rows))) if segment_indices is None else set(segment_indices)
-    eligible = {i for i, row in enumerate(project['segments']) if i in selected and
-                (project['params'].get('translation_scope') != 'missing' or not row.get('translated', '').strip())}
+    eligible = set(eligible_translation_indices(project, segment_indices,
+                                               overwrite_user_edits=overwrite_user_edits))
     if not set(completed).issubset(eligible):
         raise ValueError('Checkpoint chứa câu ngoài phạm vi dịch; không tự áp dụng.')
     for index, (original, saved) in enumerate(zip(project['segments'], rows)):
         if any(saved.get(key, '') != original.get(key, '') for key in ('start','end','text','spoken_text','words')):
             raise ValueError('Nội dung câu trong checkpoint khác snapshot; không tự áp dụng.')
+        if saved.get('user_edited', False) != original.get('user_edited', False):
+            raise ValueError('Checkpoint thay đổi cờ bảo vệ sửa tay; không tự áp dụng.')
         if index not in completed and saved.get('translated', '') != original.get('translated', ''):
             raise ValueError('Checkpoint thay đổi câu chưa được xác nhận dịch xong.')
         if index in completed and not saved.get('translated','').strip():
@@ -139,10 +169,19 @@ def validate_resume(document, project, segment_indices=None):
     warnings = document.get('warnings', [])
     if not isinstance(warnings, list) or len(warnings) > MAX_ROWS * 10 or any(not isinstance(w, str) for w in warnings):
         raise ValueError('Danh sách cảnh báo checkpoint dịch không hợp lệ.')
+    from translation_entities import validate_entity_glossary
+    validate_entity_glossary(document.get('entity_glossary'), rows)
+    skipped = document.get('skipped_source_indices', [])
+    from subtitle_text import is_translation_noise
+    if (not isinstance(skipped, list) or
+            any(type(i) is not int or not 0 <= i < len(rows) or
+                not is_translation_noise(rows[i].get('text')) or rows[i].get('speech_enabled') is not False
+                for i in skipped) or len(set(skipped)) != len(skipped)):
+        raise ValueError('Danh sách dòng rác bỏ qua trong checkpoint không hợp lệ.')
     return completed
 
 
-def validated_partial_rows(document, original_project, segment_indices=None):
+def validated_partial_rows(document, original_project, segment_indices=None, *, overwrite_user_edits=False):
     """Only restore translations tied to the failed job's original input.
 
     Current project edits are merged separately by exact source row identity,
@@ -151,10 +190,11 @@ def validated_partial_rows(document, original_project, segment_indices=None):
     """
     if isinstance(document, dict):
         if original_project['params'].get('pipeline_extract') in ('ocr', 'asr') and document.get('pipeline_state'):
-            recovered = validate_pipeline_resume(document, original_project, segment_indices)
-            validate_resume(document, recovered, segment_indices)
+            recovered = validate_pipeline_resume(document, original_project, segment_indices,
+                                                 overwrite_user_edits=overwrite_user_edits)
+            validate_resume(document, recovered, segment_indices, overwrite_user_edits=overwrite_user_edits)
         else:
-            validate_resume(document, original_project, segment_indices)
+            validate_resume(document, original_project, segment_indices, overwrite_user_edits=overwrite_user_edits)
         return copy.deepcopy(checkpoint_rows(document))
     rows = checkpoint_rows(document)
     _finite_document(rows)
@@ -166,8 +206,10 @@ def validated_partial_rows(document, original_project, segment_indices=None):
     for index, (saved, original) in enumerate(zip(rows, originals)):
         if any(saved.get(key, '') != original.get(key, '') for key in ('start', 'end', 'text', 'spoken_text', 'words')):
             raise ValueError('Checkpoint dịch cũ không khớp phụ đề đầu vào của tác vụ.')
-        eligible = index in selected and (original_project['params'].get('translation_scope') != 'missing' or
-                                         not original.get('translated', '').strip())
+        eligible = index in selected and (overwrite_user_edits or original.get('user_edited') is not True) and (
+            overwrite_user_edits and original.get('user_edited') is True or
+            original_project['params'].get('translation_scope') != 'missing' or
+            not original.get('translated', '').strip())
         if not eligible and saved.get('translated', '') != original.get('translated', ''):
             raise ValueError('Checkpoint dịch cũ có bản dịch ngoài phạm vi tác vụ.')
     return copy.deepcopy(rows)
@@ -192,7 +234,7 @@ def make_pipeline_state(initial_project, recognized_project, segment_indices=Non
                                      'coverage': copy.deepcopy(recognized_project.get('coverage', {}))}}
 
 
-def validate_pipeline_resume(document, initial_project, segment_indices=None):
+def validate_pipeline_resume(document, initial_project, segment_indices=None, *, overwrite_user_edits=False):
     """Restore only verified recognition input from the same initial pipeline."""
     if not isinstance(document, dict) or document.get('schema_version') != VERSION:
         raise ValueError('Checkpoint cũ không có snapshot nhận dạng để tiếp tục quy trình.')
@@ -207,12 +249,13 @@ def validate_pipeline_resume(document, initial_project, segment_indices=None):
     recovered = copy.deepcopy(initial_project)
     recovered['segments'] = copy.deepcopy(snapshot['segments'])
     recovered['coverage'] = copy.deepcopy(snapshot.get('coverage', {}))
-    validate_resume(document, recovered, segment_indices)
+    validate_resume(document, recovered, segment_indices, overwrite_user_edits=overwrite_user_edits)
     return recovered
 
 
 def write_checkpoint(path, project, rows, completed_indices, segment_indices=None, warnings=None,
-                     pipeline_state=None, expected_signature=None):
+                     pipeline_state=None, expected_signature=None, *, entity_glossary=None,
+                     overwrite_user_edits=False, skipped_source_indices=None):
     path = Path(path)
     current_signature = translation_signature(project, segment_indices)
     if expected_signature is not None and current_signature != expected_signature:
@@ -220,6 +263,14 @@ def write_checkpoint(path, project, rows, completed_indices, segment_indices=Non
     document = {'schema_version': VERSION, 'signature': current_signature,
                 'rows': copy.deepcopy(rows), 'completed_indices': sorted(set(completed_indices)),
                 'warnings': list(warnings or []), 'updated_at': time.time()}
+    document['connection'] = connection_identity(project)
+    if overwrite_user_edits:
+        document['overwrite_user_edits'] = True
+    if entity_glossary is not None:
+        from translation_entities import validate_entity_glossary
+        document['entity_glossary'] = validate_entity_glossary(entity_glossary, rows)
+    if skipped_source_indices:
+        document['skipped_source_indices'] = sorted(set(skipped_source_indices))
     if pipeline_state is not None:
         if (not isinstance(pipeline_state, dict) or pipeline_state.get('extract_kind') not in ('asr','ocr') or
                 not re.fullmatch('[0-9a-f]{64}', str(pipeline_state.get('input_signature', ''))) or
@@ -227,7 +278,7 @@ def write_checkpoint(path, project, rows, completed_indices, segment_indices=Non
             raise ValueError('Snapshot nhận dạng quy trình không hợp lệ.')
         document['pipeline_state'] = copy.deepcopy(pipeline_state)
     # Validate before touching the previous valid checkpoint.
-    validate_resume(document, project, segment_indices)
+    validate_resume(document, project, segment_indices, overwrite_user_edits=overwrite_user_edits)
     write_document(path, document)
     return document
 

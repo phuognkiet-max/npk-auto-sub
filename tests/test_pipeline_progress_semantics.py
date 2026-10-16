@@ -3,6 +3,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import unittest
+from job_progress import accept_event
 
 ROOT = Path(__file__).resolve().parents[1]
 NODE = shutil.which('node') or 'C:/Users/developer/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
@@ -61,6 +62,16 @@ const metered=context.jobDiagnostics({...failed,api_usage:{request_attempts:7,re
 assert.match(metered,/data-job-api-usage="true"/);
 assert.match(metered,/7\/24 lượt API/);
 assert.match(metered,/chưa xác nhận chi phí/);
+const provenance=context.jobDiagnostics({...failed,api_usage:{configured_model:'router/chosen',
+    response_models:['upstream/actual'],model_mismatch_requests:1,response_model_missing_requests:1}});
+assert.match(provenance,/Model đã cấu hình: router\/chosen/);
+assert.match(provenance,/Model dịch vụ báo: upstream\/actual/);
+assert.match(provenance,/data-model-mismatch/);
+assert.match(provenance,/1 lượt chưa có model phản hồi/);
+const absent=context.jobDiagnostics({...failed,api_usage:{configured_model:'router/chosen',response_models:[]}});
+assert.match(absent,/Dịch vụ chưa báo model trong phản hồi/);
+assert.doesNotMatch(absent,/data-model-mismatch/);
+assert.doesNotMatch(context.jobDiagnostics(failed),/data-job-model-provenance/);
 assert.doesNotMatch(context.jobDiagnostics({...failed,api_usage:{request_attempts:'bad',request_limit:24}}),/data-job-api-usage/);
 const continued=context.jobDiagnostics({...failed,api_usage:{request_attempts:2,request_limit:24,
     lineage_request_attempts:8,lineage_request_limit:24,history_unknown_jobs:0,
@@ -82,6 +93,20 @@ console.log('PASS semantic selection failure status, saved OCR counts, continuat
 
 
 class PipelineProgressSemanticsTests(unittest.TestCase):
+    def test_worker_model_provenance_reaches_job_without_inventing_response(self):
+        job = {'state': 'running'}
+        accept_event(job, {'api_usage': {'configured_model': 'router/chosen',
+            'response_models': ['upstream/actual'], 'response_model': 'upstream/actual',
+            'model_mismatch_requests': 1, 'response_model_missing_requests': 2}})
+        self.assertEqual(job['api_usage']['configured_model'], 'router/chosen')
+        self.assertEqual(job['api_usage']['response_models'], ['upstream/actual'])
+        self.assertEqual(job['api_usage']['model_mismatch_requests'], 1)
+        accept_event(job, {'api_usage': {'configured_model': 'router/chosen',
+            'response_model': None, 'response_models': [None, '<script>bad()</script>'],
+            'response_model_missing_requests': 1}})
+        self.assertNotIn('response_model', job['api_usage'])
+        self.assertEqual(job['api_usage']['response_models'], [])
+
     @unittest.skipUnless(Path(NODE).is_file(), 'Node unavailable')
     def test_saved_ocr_remains_complete_when_gemini_selection_fails(self):
         result = subprocess.run([NODE, '-e', SCRIPT,

@@ -83,9 +83,18 @@ def inspect(project, kind, *, check_credentials=True):
         if speech_ready(project):
             tts = False
     if tts:
-        used_voice_ids = {r.get('voice_id') or p.get('voice_id','piper:vais1000') for r in rows
+        # TTS admission must inspect the same effective rows as worker/cache.
+        # Keep the authored caption table above for coverage/translation QA.
+        speech_rows = rows
+        if not standalone_speech and extract not in ('ocr', 'asr') and not auto_pending:
+            from speech_delivery import effective_speech_rows
+            try:
+                speech_rows = effective_speech_rows(rows, p)
+            except ValueError as exc:
+                errors.append(str(exc))
+        used_voice_ids = {r.get('voice_id') or p.get('voice_id','piper:vais1000') for r in speech_rows
                           if r.get('speech_enabled', True) is not False}
-        if not rows:
+        if not speech_rows:
             used_voice_ids = {p.get('voice_id','piper:vais1000')}
         elif not used_voice_ids and extract not in ('ocr','asr'):
             errors.append('Không có câu bật lồng tiếng. Bật Lồng tiếng câu này hoặc tắt bước lồng tiếng để chỉ xuất phụ đề.')
@@ -113,14 +122,14 @@ def inspect(project, kind, *, check_credentials=True):
                     if extract in ('ocr','asr') and source != 'source':
                         errors.append('Nguồn lồng tiếng cần bản dịch/lời đã biên tập. Bật bước dịch hoặc chọn Phụ đề gốc.')
                     elif extract not in ('ocr','asr'):
-                        require_speech_text(rows, p)
+                        require_speech_text(speech_rows, p)
                 if source == 'source':
                     warnings.append('Lồng tiếng sẽ đọc Phụ đề gốc theo lựa chọn của bạn; chọn giọng hỗ trợ ngôn ngữ nguồn.')
             except ValueError as exc:
                 errors.append(str(exc))
         if not standalone_speech and extract not in ('ocr','asr') and not auto_pending:
             from speech_delivery import delivery_window
-            for index, row in enumerate(rows):
+            for index, row in enumerate(speech_rows):
                 try:
                     delivery_window(row, p, index + 1, project['media']['duration'])
                 except ValueError as exc:

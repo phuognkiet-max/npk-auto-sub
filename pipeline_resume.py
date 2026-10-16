@@ -1,7 +1,9 @@
-"""Continue a reviewed recognition snapshot without repeating OCR or ASR.
+"""Continue verified preparation snapshots without repeating completed work.
 
 Inspection is read-only. Only the queue endpoint creates a private job snapshot;
 it never changes the editor's extraction choice or acknowledges review for it.
+Pre-render approval is explicit, persisted separately, and bound to the exact
+caption, speech, picture and audio identities the editor presented for review.
 """
 from __future__ import annotations
 
@@ -55,8 +57,164 @@ def write_review_checkpoint(initial_project, recognized_project, job, folder, re
                 'completed_steps': result.get('completed_steps', result.get('steps', [])),
                 'remaining_steps': result.get('remaining_steps', []),
                 'warnings': result.get('warnings', [])}
+    if result.get('review_stage') == 'pre_render':
+        document.update(review_stage='pre_render',
+            prepared_signature=pre_render_signature(recognized_project),
+            prepared_project=copy.deepcopy(recognized_project))
     write_document(Path(folder) / 'pipeline-review.json', document)
     return 'pipeline-review.json'
+
+
+def pre_render_signature(project):
+    """Bind human approval to actual editable contents, never a timestamp.
+
+    Workflow switches are job-local on a render-only continuation. Everything
+    affecting source, captions, selected speech, cleanup and audio mix remains
+    bound; changing providers or voices also requires a fresh review.
+    """
+    from artifact_resolver import render_fingerprint
+    from subtitle_quality import digest, source_signature
+    # Browser form numbers and JSON validation may round-trip 0 as 0.0. Bind
+    # approval to numeric values, not incidental JSON number representation.
+    # Normalize before nested fingerprints as well as the final digest.
+    def canonical_numbers(value):
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        if isinstance(value, dict):
+            return {key: canonical_numbers(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [canonical_numbers(item) for item in value]
+        return value
+    project = canonical_numbers(project)
+    workflow = {'pipeline_extract', 'pipeline_translate', 'pipeline_tts', 'pipeline_clean',
+                'translation_scope', 'subtitle_automation', 'export_name', 'export_directory'}
+    params = {key: value for key, value in project.get('params', {}).items() if key not in workflow}
+    artifacts = project.get('artifacts') or {}
+    selected_assets = {}
+    for kind in ('tts', 'clean'):
+        used = (kind == 'clean' and params.get('use_clean') or kind == 'tts' and
+                float(params.get('voice_gain', 0)) > 0 and not params.get('voice_path'))
+        if used:
+            artifact = artifacts.get(kind) or {}
+            selected_assets[kind] = {'signature': artifact.get('speech_signature' if kind == 'tts' else 'signature'),
+                'file_integrity': (artifact.get('verification') or {}).get('file_integrity')}
+    # Word timestamps are derived output and are already included in the editor
+    # table; they must not be silently replaced after the user heard this plan.
+    return digest(['npk-pre-render-review-v1', project.get('id'),
+        project.get('source_revision'), source_signature(project), render_fingerprint(project),
+        project.get('segments', []), project.get('regions', []),
+        project.get('extraction_regions', []), params, selected_assets])
+
+
+def _pre_render_assets(project):
+    """Recheck anchored bytes before approving or consuming an approval."""
+    from stage_journal import require_reusable_artifact
+    p = project.get('params', {})
+    if p.get('use_clean'):
+        require_reusable_artifact(project, 'clean')
+    if float(p.get('voice_gain', 0)) > 0 and not p.get('voice_path'):
+        require_reusable_artifact(project, 'tts')
+
+
+def pre_render_review_status(project):
+    signature = pre_render_signature(project)
+    approval = project.get('pre_render_review') or {}
+    enabled = project.get('params', {}).get('review_before_render') is True
+    approved = (isinstance(approval, dict) and approval.get('schema_version') == 1 and
+                approval.get('signature') == signature and approval.get('approved') is True)
+    return {'project_id': project['id'], 'expected_revision': project['updated'],
+        'enabled': enabled, 'signature': signature, 'approved': approved,
+        'requires_review': enabled and not approved,
+        'job_id': approval.get('job_id') if approved else None,
+        'review_stage': 'pre_render', 'remaining_steps': ['render']}
+
+
+def require_pre_render_approval(project):
+    """An export may only consume an explicit approval for the same contents."""
+    if project.get('params', {}).get('review_before_render') is not True:
+        return
+    status = pre_render_review_status(project)
+    if not status['approved']:
+        raise ValueError('Cần xem và duyệt kết quả hiện tại trước khi xuất video. Nội dung đã thay đổi thì phải duyệt lại.')
+    _pre_render_assets(project)
+
+
+def prepared_review_snapshot(row, project, folder):
+    """Read a completed preparation contract, preserving the editor verbatim."""
+    from subtitle_quality import source_signature
+    result = row.get('result') or {}
+    if (row.get('kind') != 'pipeline' or row.get('state') != 'review' or
+            result.get('review_stage') != 'pre_render' or not result.get('needs_review') or
+            result.get('remaining_steps') != ['render'] or
+            result.get('primary_file') == 'final.mp4' or 'final.mp4' in result.get('files', [])):
+        raise ValueError('Chưa có kết quả chuẩn bị hoàn tất để xem và duyệt trước khi xuất.')
+    if row.get('source_revision') != project.get('source_revision') or row.get('project_id') != project['id']:
+        raise ValueError('Kết quả cần duyệt thuộc nguồn khác; không áp dụng cho video hiện tại.')
+    read_input(folder, row, project)
+    path = Path(folder) / 'pipeline-review.json'
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_SNAPSHOT_BYTES:
+        raise ValueError('Thiếu bản chụp kết quả chuẩn bị cần duyệt.')
+    from translation_checkpoint import _unique_object, _invalid_constant, _finite_document
+    with path.open(encoding='utf-8') as stream:
+        document = json.load(stream, object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
+    _finite_document(document)
+    prepared = document.get('prepared_project') if isinstance(document, dict) else None
+    if (document.get('schema_version') != 1 or document.get('review_stage') != 'pre_render' or
+            document.get('job_id') != row['id'] or document.get('project_id') != project['id'] or
+            document.get('source_revision') != project.get('source_revision') or
+            document.get('source_signature') != source_signature(project) or
+            not isinstance(prepared, dict) or prepared.get('id') != project['id'] or
+            prepared.get('source_revision') != project.get('source_revision')):
+        raise ValueError('Bản chụp chuẩn bị không khớp dự án/nguồn hiện tại.')
+    wanted = pre_render_signature(project)
+    if (pre_render_signature(prepared) != wanted or document.get('prepared_signature') != wanted or
+            result.get('pre_render_signature') != wanted):
+        raise ValueError('Nội dung, giọng, âm thanh hoặc cấu hình đã đổi sau bước chuẩn bị. Chạy chuẩn bị lại rồi xem và duyệt kết quả mới.')
+    _pre_render_assets(project)
+    return copy.deepcopy(project)
+
+
+def pre_render_continuation_status(row, project, jobs, folder):
+    plan = {'job_id': row['id'], 'project_id': project['id'], 'expected_revision': project['updated'],
+        'can_continue': False, 'completed_steps': list((row.get('result') or {}).get('completed_steps', [])),
+        'remaining_steps': ['render'], 'requires_review': True, 'review_stage': 'pre_render',
+        'enabled': project.get('params', {}).get('review_before_render') is True,
+        'signature': None, 'approved': False,
+        'errors': [], 'warnings': [], 'reason': '', 'next_action': 'review_before_render'}
+    try:
+        plan.update(pre_render_review_status(project))
+        plan['job_id'] = row['id']
+        snapshot = prepared_review_snapshot(row, project, folder)
+        if any(item.get('project_id') == project['id'] and item.get('state') in ('queued', 'running')
+               for item in jobs):
+            raise ValueError('Dự án đang có tác vụ khác. Chờ hoàn tất trước khi duyệt hoặc xuất.')
+        if any(item.get('continuation_from') == row['id'] and item.get('state') == 'done' and
+               (item.get('result') or {}).get('primary_file') == 'final.mp4' for item in jobs):
+            raise ValueError('Kết quả này đã được xuất; mở thành phẩm hoặc chuẩn bị phiên bản mới.')
+        from preflight import inspect
+        checks = inspect(pre_render_continuation_snapshot(snapshot), 'render', check_credentials=False)
+        plan['errors'], plan['warnings'] = checks.get('errors', []), checks.get('warnings', [])
+        plan['can_approve'] = bool(checks.get('ok'))
+        plan.update(pre_render_review_status(project))
+        plan['job_id'] = row['id']
+        if plan['errors']:
+            plan.update(reason=plan['errors'][0], next_action='fix_configuration')
+        elif not plan['approved']:
+            plan['reason'] = 'Các bước xử lý đã xong. Xem phụ đề, nghe lời đọc và duyệt trước khi xuất video.'
+        else:
+            plan.update(can_continue=True, requires_review=False, next_action='export_reviewed_video',
+                        reason='Đã duyệt đúng kết quả hiện tại. Chỉ xuất video, không nhận dạng, dịch hoặc tạo giọng lại.')
+    except (ValueError, OSError, KeyError, TypeError, AttributeError) as exc:
+        plan.update(reason=str(exc), can_approve=False)
+    return plan
+
+
+def pre_render_continuation_snapshot(project):
+    snapshot = copy.deepcopy(project)
+    snapshot['params'].update(pipeline_extract='existing', pipeline_translate=False,
+                             pipeline_tts=False, pipeline_clean=False,
+                             translation_scope='missing', subtitle_automation='manual')
+    return snapshot
 
 
 def continuation_status(row, project, jobs, folder, *, allow_recovery=True):
@@ -69,6 +227,8 @@ def continuation_status(row, project, jobs, folder, *, allow_recovery=True):
     if not row:
         plan['reason'] = 'Không có quy trình đang dừng để tiếp tục.'
         return plan
+    if (row.get('result') or {}).get('review_stage') == 'pre_render' and row.get('state') == 'review':
+        return pre_render_continuation_status(row, project, jobs, folder)
     if allow_recovery:
         if row.get('state') in ('error', 'cancelled') and not row.get('continuation_from'):
             return failed_continuation_status(row, project, jobs, folder)
@@ -197,7 +357,8 @@ def _merge_known_translations(snapshot, saved_rows):
         values = [(index, translated.get(identity(cue), '')) for index, cue in enumerate(current)]
     restored = 0
     for index, text in values:
-        if text and not str(current[index].get('translated') or '').strip():
+        if (text and current[index].get('user_edited') is not True and
+                not str(current[index].get('translated') or '').strip()):
             current[index]['translated'] = text
             restored += 1
     return restored
@@ -323,7 +484,8 @@ def recovery_snapshot(row, project, jobs, folder):
         preexisting = [(index, values[identity(cue)]) for index, cue in enumerate(current_rows)
                        if identity(cue) in values]
     for index, translated in preexisting + completed:
-        if not snapshot['segments'][index].get('translated', '').strip():
+        if (snapshot['segments'][index].get('user_edited') is not True and
+                not snapshot['segments'][index].get('translated', '').strip()):
             snapshot['segments'][index]['translated'] = translated
             restored += 1
     selected = row.get('segment_indices')
@@ -366,7 +528,8 @@ def journal_recovery_snapshot(row, project, folder, *, original=None):
             completed.append('ocr')
         else:
             from translation_checkpoint import read_checkpoint, validate_pipeline_resume
-            recovered = validate_pipeline_resume(read_checkpoint(checkpoint), original, row.get('segment_indices'))
+            recovered = validate_pipeline_resume(read_checkpoint(checkpoint), original, row.get('segment_indices'),
+                overwrite_user_edits=row.get('overwrite_user_edits') is True)
             if project.get('segments', []) != original.get('segments', []):
                 raise ValueError('Bảng đã được chỉnh sau nhận dạng; áp dụng checkpoint có kiểm tra thay vì ghi đè.')
             snapshot['segments'], snapshot['coverage'] = recovered['segments'], recovered.get('coverage', {})
@@ -615,6 +778,10 @@ def failed_continuation_status(row, project, jobs, folder):
 
 def prepare_continuation(row, project, jobs, folder):
     """Return private work plus its root/recovery IDs after a read-only plan."""
+    if (row.get('result') or {}).get('review_stage') == 'pre_render' and row.get('state') == 'review':
+        snapshot = prepared_review_snapshot(row, project, folder)
+        require_pre_render_approval(snapshot)
+        return pre_render_continuation_snapshot(snapshot), row['id'], None, None
     if row.get('state') in ('error', 'cancelled') and not row.get('continuation_from'):
         failed = row
     elif row.get('continuation_from') and row.get('state') in ('error', 'cancelled'):

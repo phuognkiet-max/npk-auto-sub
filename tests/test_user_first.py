@@ -103,7 +103,8 @@ class UserFirstTests(unittest.TestCase):
         self.assertFalse(export_plan(p)['subtitles']['errors'])
 
     def test_job_retry_idempotency_and_revision(self):
-        self.p['params'].update(burn_subtitles=False)
+        # Legacy export idempotency; new-project review is tested separately.
+        self.p['params'].update(burn_subtitles=False, review_before_render=False)
         put('project',self.p['id'],self.p)
         body={'project_id':self.p['id'],'kind':'render','expected_revision':self.p['updated'],'request_id':uuid.uuid4().hex}
         with patch('preflight.inspect',return_value={'ok':True}):

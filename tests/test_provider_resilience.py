@@ -193,7 +193,9 @@ class ProviderResilienceTests(unittest.TestCase):
         events = []
         with self.assertRaises(providers.ProviderError):
             providers.generate('gemini', 'SECRET', 'gemini-test', 'hi', client=client, on_request=events.append)
-        self.assertEqual(events[-1], {'event': 'usage', 'usage': {'total_tokens': 200}})
+        self.assertEqual(events[-1]['event'], 'usage')
+        self.assertEqual(events[-1]['usage'], {'total_tokens': 200})
+        self.assertEqual(events[-1]['configured_model'], 'gemini-test')
         self.assertEqual(len(calls), 1)
 
     def test_google_quota_detail_is_classified_without_exposing_identifiers_or_body(self):
@@ -545,7 +547,9 @@ class SpeechRewriteProviderTests(unittest.TestCase):
             with self.assertRaises(providers.ProviderError):
                 optimize_spoken(self.project(),{},Path(directory))
             self.assertEqual(generate.call_count,1)
-            self.assertFalse((Path(directory)/'speech-rewrite-checkpoint.json').exists())
+            checkpoint = Path(directory)/'speech-rewrite-checkpoint.json'
+            self.assertTrue(checkpoint.exists())
+            self.assertEqual(json.loads(checkpoint.read_text(encoding='utf-8'))['completed_indices'], [])
 
     def test_rewrite_rejects_coercible_ids_without_publishing_false_result(self):
         from speech_rewrite import optimize_spoken

@@ -2,19 +2,22 @@
 
 **Ứng dụng Windows xử lý một video từ nhận dạng phụ đề tới dịch, lồng tiếng và xuất MP4.**
 
-Kho này chứa bản mã nguồn phục vụ đọc, thảo luận và rà soát kiến trúc của **NPK Auto Sub 0.8.5 RC9**, kèm bản sửa tự bố trí lời đọc ngày 15/10/2026. Tên nội bộ trong một số module vẫn là **VietDub Studio** để giữ tương thích dữ liệu.
+Kho này chứa bản mã nguồn phục vụ đọc, thảo luận và rà soát kiến trúc của **NPK Auto Sub 0.8.5 RC10**. Tên nội bộ trong một số module vẫn là **VietDub Studio** để giữ tương thích dữ liệu.
 
 **Cập nhật 16/10/2026:** sửa API/JSON retry và ngữ cảnh dịch scope còn trống; thêm **Kiểm tra lời đọc** cục bộ để xem, chọn nhóm lặp hoặc dòng ghi nguồn cần tắt đọc. Giữ phần xóa vùng chọn. Xem [phạm vi, bằng chứng và giới hạn](docs/API-TRANSLATION-FOCUS-2026-10-16.md).
 
-Đây là dự án đang phát triển, chưa phải sản phẩm đã nghiệm thu chất lượng hoặc bộ cài portable. Một video thực dài **11 phút 35 giây, 381 câu** đã đi hết pipeline và xuất được MP4; chất lượng timing/giọng vẫn có giới hạn được ghi rõ dưới đây. Số bài test không thay thế việc xem/nghe duyệt video.
+**Mã nguồn RC10 đồng bộ ngày 17/10/2026:** gồm ba đợt cải tổ làm sạch văn bản, chất lượng dịch/lời đọc, khôi phục từng phần của batch, kiểm chứng model phản hồi và bảo toàn nội dung sửa tay. Xem [Đợt 1](docs/PHASE1-TEXT-REVIEW-RC10.md) và [Đợt 2–3](docs/PHASE2-3-TRANSLATION-RELIABILITY-RC10.md). Đây là thay đổi mã nguồn và kiểm thử; không khẳng định video mới đã được xuất hoặc chất lượng mọi ngôn ngữ đã được nghiệm thu.
+
+Đây là dự án đang phát triển, chưa phải sản phẩm đã nghiệm thu chất lượng hoặc bộ cài portable. Video thực **11 phút 35 giây, 381 câu** được chia sẻ gần đây vẫn chưa có thành phẩm đã xác minh; lượt đó dừng ở bước kiểm tra timing lời đọc. Test trên media tổng hợp không chứng minh một video thực đã đi hết pipeline. Xem [trạng thái và giới hạn](docs/PROJECT_STATUS.md).
 
 ## Đưa cho AI khác đọc
 
 1. [Mô tả kiến trúc đầy đủ](docs/ARCHITECTURE.md): luồng xử lý, module, lưu trữ, API, checkpoint, kiểm quota và giọng.
 2. [Hướng dẫn AI review + prompt bàn giao](docs/AI_REVIEW_GUIDE.md): thứ tự đọc, invariant cần giữ và câu hỏi cần phản biện.
-3. [Cách thiết lập và chạy](docs/GETTING_STARTED.md).
-4. [Trạng thái thực tế và giới hạn](docs/PROJECT_STATUS.md).
-5. [Phạm vi bản public](docs/PUBLIC_SNAPSHOT.md), [ranh giới kiểm thử](docs/TEST-BOUNDARIES.md), [thành phần bên thứ ba](docs/THIRD_PARTY.md).
+3. [Đợt 1: làm sạch OCR, khử trùng lặp và duyệt trước render](docs/PHASE1-TEXT-REVIEW-RC10.md).
+4. [Đợt 2–3: chất lượng dịch, lời đọc, partial retry và bảo toàn sửa tay](docs/PHASE2-3-TRANSLATION-RELIABILITY-RC10.md).
+5. [Cách thiết lập và chạy](docs/GETTING_STARTED.md) và [trạng thái thực tế/giới hạn](docs/PROJECT_STATUS.md).
+6. [Phạm vi bản public](docs/PUBLIC_SNAPSHOT.md), [ranh giới kiểm thử](docs/TEST-BOUNDARIES.md), [thành phần bên thứ ba](docs/THIRD_PARTY.md).
 
 Prompt ngắn có thể gửi kèm link kho:
 

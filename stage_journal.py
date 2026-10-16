@@ -328,7 +328,8 @@ def recover(project, folder):
             if [identity(r) for r in saved] != [identity(r) for r in current]:
                 continue
             for original, target in zip(saved, current):
-                if not str(target.get('translated') or '').strip():
+                if (target.get('user_edited') is not True and
+                        not str(target.get('translated') or '').strip()):
                     target['translated'] = original.get('translated', '')
         else:
             snapshot.setdefault('artifacts', {})[kind] = copy.deepcopy(result) | {
