@@ -4,6 +4,8 @@
 
 Kho này chứa bản mã nguồn phục vụ đọc, thảo luận và rà soát kiến trúc của **NPK Auto Sub 0.8.5 RC9**, kèm bản sửa tự bố trí lời đọc ngày 15/10/2026. Tên nội bộ trong một số module vẫn là **VietDub Studio** để giữ tương thích dữ liệu.
 
+**Cập nhật 16/10/2026:** sửa API/JSON retry và ngữ cảnh dịch scope còn trống; thêm **Kiểm tra lời đọc** cục bộ để xem, chọn nhóm lặp hoặc dòng ghi nguồn cần tắt đọc. Giữ phần xóa vùng chọn. Xem [phạm vi, bằng chứng và giới hạn](docs/API-TRANSLATION-FOCUS-2026-10-16.md).
+
 Đây là dự án đang phát triển, chưa phải sản phẩm đã nghiệm thu chất lượng hoặc bộ cài portable. Một video thực dài **11 phút 35 giây, 381 câu** đã đi hết pipeline và xuất được MP4; chất lượng timing/giọng vẫn có giới hạn được ghi rõ dưới đây. Số bài test không thay thế việc xem/nghe duyệt video.
 
 ## Đưa cho AI khác đọc

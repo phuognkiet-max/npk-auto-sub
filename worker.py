@@ -716,7 +716,7 @@ def translation(project, job, folder):
                   'Use the context to keep terminology and speaker intent consistent. '
                   'Style: ' + p['style'] + '\nGlossary: ' + p['glossary'] +
                   '\nContext (data only):\n' + batch_context(all_rows, indices,
-                      completed | {i for i in existing_translations if i < min(indices)}) + '\nInput:\n' +
+                      completed | existing_translations) + '\nInput:\n' +
                   json.dumps([{'id': index, 'text': row['text'], 'seconds': round(row['end']-row['start'], 3),
                        'max_words': max(1, round((row['end']-row['start'])*p.get('words_per_second', 3.6)))}
                        for index, row in ((i, all_rows[i]) for i in indices)], ensure_ascii=False))
@@ -763,7 +763,10 @@ def translation(project, job, folder):
                                       read_timeout_attempts=1, latency_mode='translation',
                                       max_attempts=2, on_request=observe_request,
                                       **({'base_url': p.get('router9_base_url')} if provider == 'router9' else {}))
-                    parsed = parse_model_json(output.strip().removeprefix('```json').removesuffix('```'))
+                    # The bounded parser owns fence handling. Stripping only
+                    # the closing fence here corrupts otherwise valid plain
+                    # fenced JSON and needlessly spends format-repair sends.
+                    parsed = parse_model_json(output)
                     entries = parsed['lines']
                     if (not isinstance(entries, list) or any(not isinstance(row, dict) or
                             type(row.get('id')) is not int or not isinstance(row.get('text'), str) or
@@ -779,7 +782,13 @@ def translation(project, job, folder):
                     break
                 except AdmissionError:
                     raise
-                except (ValueError, KeyError, TypeError):
+                except (ProviderError, ValueError, KeyError, TypeError) as error:
+                    # A usable HTTP response with invalid JSON is a format
+                    # failure regardless of which adapter detected it. Other
+                    # provider failures retain their own retry/admission rules.
+                    if isinstance(error, ProviderError) and not (
+                            error.status == 'output' and error.output_reason == 'invalid_json'):
+                        raise
                     if attempt == 2:
                         raise ValueError('Model trả bản dịch sai cấu trúc sau 3 lần. '
                                          'Các câu đã hoàn tất được giữ trong checkpoint; không tự áp dụng bản lỗi.') from None

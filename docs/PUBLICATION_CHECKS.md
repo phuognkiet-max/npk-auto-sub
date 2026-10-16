@@ -1,5 +1,7 @@
 # Kiểm tra bản source công khai — 15/10/2026
 
+Cập nhật 16/10/2026: phần API/dịch/kiểm tra lời đọc có 194 kiểm thử tập trung đạt trong workspace phát triển; xem [báo cáo phạm vi](API-TRANSLATION-FOCUS-2026-10-16.md). Bản public cũng được kiểm lại với runner/DATA riêng. Test API mới dùng model/config identity tổng hợp và chặn inference, không phụ thuộc weights trên máy phát triển.
+
 Các kiểm tra này áp dụng cho snapshot mã nguồn trước khi đưa lên GitHub. Chúng
 không thay thế việc cài trên máy sạch hoặc duyệt nội dung của video thực tế.
 

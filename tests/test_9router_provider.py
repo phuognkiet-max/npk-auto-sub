@@ -140,7 +140,8 @@ class Router9ProviderTests(unittest.TestCase):
                 self.assertEqual(len(calls), 1)
 
     def test_json_output_is_validated_once_and_usage_is_kept_on_invalid_output(self):
-        for text in ('not json PRIVATE', '{"same":1,"same":2}', '[1]', '{"value":NaN}'):
+        for text in ('not json PRIVATE', '{"same":1,"same":2}', '[1]', 'null', 'true',
+                     '{"value":NaN}'):
             with self.subTest(text=text):
                 response = completion(text).json()
                 response['usage'] = {'total_tokens': 12}
@@ -150,9 +151,29 @@ class Router9ProviderTests(unittest.TestCase):
                     providers.generate('router9', 'TEST-TOKEN', 'cx/gpt-test', 'hi', json_mode=True,
                                        client=client, on_request=events.append)
                 self.assertEqual(caught.exception.status, 'output')
+                self.assertEqual(caught.exception.output_reason, 'invalid_json')
                 self.assertNotIn('PRIVATE', str(caught.exception))
                 self.assertEqual(len(calls), 1)
                 self.assertEqual(events[-1], {'event': 'usage', 'usage': {'total_tokens': 12}})
+
+    def test_invalid_json_does_not_retry_or_confirm_probe_recovery(self):
+        from contextlib import contextmanager
+        hooks = []
+
+        @contextmanager
+        def slot(*args, **kwargs):
+            def receipt(*args, **kwargs):
+                hooks.append(kwargs)
+            yield receipt
+
+        client, calls = self.transport([completion('[1]'), completion('{"lines":[]}')])
+        with patch('providers.request_slot', slot):
+            with self.assertRaises(providers.ProviderError) as caught:
+                providers.generate('router9', 'TEST-TOKEN', 'cx/gpt-test', 'hi', json_mode=True,
+                                   probe=True, client=client, max_attempts=5)
+        self.assertEqual(caught.exception.output_reason, 'invalid_json')
+        self.assertEqual(len(calls), 1)
+        self.assertFalse(hooks)
 
     def test_owned_clients_disable_environment_proxy_and_redirects(self):
         native_client, options, calls = httpx.Client, [], []

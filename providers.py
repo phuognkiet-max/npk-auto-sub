@@ -653,7 +653,11 @@ def generate(provider, secret, model, prompt, *, json_mode=False, client=None, p
                 if not isinstance(parsed, dict):
                     raise ValueError('object')
             except ValueError:
-                raise ProviderError('output', '9Router trả nội dung JSON không hợp lệ; giữ phần đã hoàn tất.') from None
+                # The adapter does not retry successful HTTP responses. A
+                # structured reason lets translation own its bounded format
+                # repair without treating auth, quota or transport as format.
+                raise ProviderError('output', '9Router trả nội dung JSON không hợp lệ; giữ phần đã hoàn tất.',
+                                    output_reason='invalid_json') from None
         for commit in probe_success_hooks:
             commit(probe_succeeded=True)
         return output

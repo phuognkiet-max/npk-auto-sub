@@ -1,6 +1,6 @@
 {
   "purpose": "Sanitized first-party source for discussion and review",
-  "snapshot_date": "2026-10-15",
+  "snapshot_date": "2026-10-16",
   "files": [
     {
       "path": ".gitattributes",
@@ -25,8 +25,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 9339,
-      "sha256": "9fe33aa30388f57d4461ad9ffb76ff30938acddda16dae5e55876d80b94ce1fd",
+      "bytes": 9678,
+      "sha256": "7bfe52fbb1c15653b969387c4ce20f28c1f1b28c50c7b516cd7bcca6fdd529b9",
       "normalized": false,
       "curated_for_public_review": true
     },
@@ -53,8 +53,8 @@
     },
     {
       "path": "assets/branding/README.md",
-      "bytes": 5788,
-      "sha256": "a3fab185cbc83d9e344e3c17bca38a1f8f884ba416b36dbf6bab08a117799721",
+      "bytes": 5721,
+      "sha256": "b4faa46edb5ee9645e646979cb8bec386e6d5ffc2a9561548cbe837aa8b683d0",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -136,11 +136,25 @@
       "curated_for_public_review": false
     },
     {
+      "path": "dialogue_review.py",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 9110,
+      "sha256": "44bf53b38554532182fd10783cfc40ffa782b0a59fc3e9b5c90a4b7f079471e7"
+    },
+    {
       "path": "docs/AI_REVIEW_GUIDE.md",
       "bytes": 12162,
       "sha256": "18af319323a6e696eb5de4edb31ce82f90a433577143343bfd912b18fb683028",
       "normalized": false,
       "curated_for_public_review": false
+    },
+    {
+      "path": "docs/API-TRANSLATION-FOCUS-2026-10-16.md",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 6702,
+      "sha256": "82aeeab7647ecc8b101b751781797bffb8357edb3393e15d2e3ecd5b93ddd378"
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -158,15 +172,15 @@
     },
     {
       "path": "docs/PROJECT_STATUS.md",
-      "bytes": 5922,
-      "sha256": "1d7f84b592cc54df8c9e473bb0f5933ee5ed5c2d55724a38b49e303198f577dc",
+      "bytes": 6507,
+      "sha256": "ca10e02e625491727a8c487c89f41c38d050138b7e8770ff07b48b50a1c3ad99",
       "normalized": false,
       "curated_for_public_review": true
     },
     {
       "path": "docs/PUBLICATION_CHECKS.md",
-      "bytes": 2365,
-      "sha256": "48a07faa075e3e4167d3ac5fac452c0f8ae6c45ee965600e6137ae58b25d7feb",
+      "bytes": 2768,
+      "sha256": "423a49b9c3e75101c236d93a63dd3cf0d16c41baea1be4f01d5f6457e0d30851",
       "normalized": false,
       "curated_for_public_review": true
     },
@@ -361,8 +375,8 @@
     },
     {
       "path": "providers.py",
-      "bytes": 40353,
-      "sha256": "0a2295b4abd39d36ffc1e1dff56fe1522fad2c28d135744cf756e6c31eb721d5",
+      "bytes": 40647,
+      "sha256": "a2754af9991f53e40db894a7262a0cce865160a47686ff3afcdaa7e66efca949",
       "normalized": false,
       "curated_for_public_review": false
     },
@@ -578,8 +592,8 @@
     },
     {
       "path": "static/studio.js",
-      "bytes": 291066,
-      "sha256": "a1982f994e97623e51b0c8bbd2c3e32358a67fe952f0ae11f85b24e2a928fa60",
+      "bytes": 295567,
+      "sha256": "654698970e962bd96d88b5fbc3528d0a64b90cbce64bd4e847acb7b685890472",
       "normalized": false,
       "curated_for_public_review": false
     },
@@ -634,8 +648,8 @@
     },
     {
       "path": "studio_api.py",
-      "bytes": 68258,
-      "sha256": "25b17fcadf6da3dcc04f5a42e07db4e586db36bfdbbb0d58810ec9630dbe37a9",
+      "bytes": 69898,
+      "sha256": "3e45d2c7804ef33436e90e906ba13c2bfaa0bec776b5f504445a47f72fb58e22",
       "normalized": false,
       "curated_for_public_review": false
     },
@@ -743,6 +757,13 @@
       "sha256": "832e7c475fda2dcc19ccb5b4c9a7b34216159cc7ba09553b64170425c671d2f1",
       "normalized": false,
       "curated_for_public_review": false
+    },
+    {
+      "path": "tests/dialogue_review_ui.cjs",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 5055,
+      "sha256": "184be19688553af7cf1cdd5d47dc1c97f647e4b7ed487b739ef79516f22f84b6"
     },
     {
       "path": "tests/editor_browser_test.py",
@@ -1075,8 +1096,8 @@
     },
     {
       "path": "tests/test_9router_director.py",
-      "bytes": 14080,
-      "sha256": "635398cf072b068bc3b45cfd2782873f932fab061e9b35a4c47084cf078a96a3",
+      "bytes": 13843,
+      "sha256": "d1d34a459da44593d531707418d5f1a05fecd642f50ee3aa4d74f7d4dd4757ec",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1089,8 +1110,8 @@
     },
     {
       "path": "tests/test_9router_provider.py",
-      "bytes": 16884,
-      "sha256": "27f48e2341632ecf03f48165a2c088a9c8f63e2a73f640b5b5edea973f1afa0b",
+      "bytes": 17839,
+      "sha256": "4c86e5c15fb6a661e661d865038b582eae7682997191539ae369d1bd43e554ae",
       "normalized": false,
       "curated_for_public_review": false
     },
@@ -1180,8 +1201,8 @@
     },
     {
       "path": "tests/test_clean_effects.py",
-      "bytes": 5231,
-      "sha256": "d7b25b6615bb39e9e7af08b66dfe0c0d5d211cb4f2ac7dbdf776befd8330d7ef",
+      "bytes": 5137,
+      "sha256": "c6fb12e210acd14755a8a9ee670b4fb0888b678a4ad48ad390f7e1f47e14a91b",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1235,9 +1256,30 @@
       "curated_for_public_review": false
     },
     {
+      "path": "tests/test_dialogue_review.py",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 8214,
+      "sha256": "24ab50f47ffe149506e3b674135839b26f240608f052efa5e4fe263b5361d436"
+    },
+    {
+      "path": "tests/test_dialogue_review_api.py",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 10526,
+      "sha256": "0ba217acaf052e8c214d671b146620257388cbedd4ae07fd8d7035bfe7c82af1"
+    },
+    {
+      "path": "tests/test_dialogue_review_ui.py",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 630,
+      "sha256": "ceaea4b745d550d01077ccccf9f76087011eaa1cac1296661a731700bb1d0ccf"
+    },
+    {
       "path": "tests/test_dubbing_setup.py",
-      "bytes": 14617,
-      "sha256": "b13a1c874658cd46ce615ecfce96de63e9d6dfc4c79dd57164827842adb6fab1",
+      "bytes": 14368,
+      "sha256": "45e8af81c3005addf95c12e1efc09d8be5158a29a0a221f1f1aa5db39ca25f2f",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1320,8 +1362,8 @@
     },
     {
       "path": "tests/test_live_clean_preview.py",
-      "bytes": 5536,
-      "sha256": "7d515e9bbc04b51ba47bfbd7e4e7541be3f231458b85da5ae194fba3c46c33af",
+      "bytes": 5437,
+      "sha256": "8eac3bb198de44181cd050261b72dc4744e6a9c3f553e9a18d758c3bcbddb47f",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1376,8 +1418,8 @@
     },
     {
       "path": "tests/test_offline_pipeline_admission.py",
-      "bytes": 5837,
-      "sha256": "73da3a70facc06be12e4954788b0933de0160b2a7becec655966964222d1b73d",
+      "bytes": 5744,
+      "sha256": "0f50898ae6309c07586665f4be0b4485cade9fd1b7009a725984154d5b080e19",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1488,8 +1530,8 @@
     },
     {
       "path": "tests/test_request_pacing.py",
-      "bytes": 11371,
-      "sha256": "97d4d5dae7a4bf0d2c2d4776142a9ab763eaef0ede260093cf39780d7727735a",
+      "bytes": 11152,
+      "sha256": "3b34566e4926689a840d3acc9eed443d78eb9cad57a149289e357f48e34ee954",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1516,8 +1558,8 @@
     },
     {
       "path": "tests/test_speech_auto_schedule.py",
-      "bytes": 3270,
-      "sha256": "55f722b3386789d42e4dd22f6d8f88a6e339aa6500a519dad0821bb48b6e4f5b",
+      "bytes": 3209,
+      "sha256": "1e235f42e98d9adac336e88fa880a58393b2de710a418a39a8493fed01847a14",
       "normalized": true,
       "curated_for_public_review": true
     },
@@ -1604,6 +1646,13 @@
       "sha256": "d8c48b8c960b3f2cfe98c78d56ea31aec84cff5843a1139b8c3c421717533c2a",
       "normalized": false,
       "curated_for_public_review": false
+    },
+    {
+      "path": "tests/test_translation_prompt_contract.py",
+      "normalized": false,
+      "curated_for_public_review": true,
+      "bytes": 12197,
+      "sha256": "55a6e2fb045cfc951e81fb8c3c457d9f64127d4745aabf51c3d733bcf6a985e5"
     },
     {
       "path": "tests/test_translation_request_budget.py",
@@ -1901,8 +1950,8 @@
     },
     {
       "path": "translation_quality.py",
-      "bytes": 5081,
-      "sha256": "44a54b0d5b7b5ad6f0d0df22e4a8e1b658cac94a2ff73ceadea44977a13547f9",
+      "bytes": 5929,
+      "sha256": "41228729f7ce46008181831578ce7ae68e061a94cf367a5c41435b06c73aaff4",
       "normalized": false,
       "curated_for_public_review": false
     },
@@ -1957,8 +2006,8 @@
     },
     {
       "path": "worker.py",
-      "bytes": 91787,
-      "sha256": "4e8c4ae76612a434bb3380ce537175269b6732ea5c7cae6a664ad8d4813c70e9",
+      "bytes": 92381,
+      "sha256": "018d7be374fb53e1c54d9869f939345422eb7e7b494543e59efd9d8ea7c9ce28",
       "normalized": false,
       "curated_for_public_review": false
     }
@@ -1985,5 +2034,6 @@
     "Speech schema tests use isolated model identity fixtures instead of installed voice weights"
   ],
   "license": "No new open-source license grant is implied. See docs/THIRD_PARTY.md.",
-  "manifest_scope": "All initial publication files except this self-referential manifest; hashes describe working-file bytes before Git line-ending normalization."
+  "manifest_scope": "All initial publication files except this self-referential manifest; hashes describe working-file bytes before Git line-ending normalization.",
+  "hash_basis": "Git index blob bytes; excludes this manifest itself"
 }

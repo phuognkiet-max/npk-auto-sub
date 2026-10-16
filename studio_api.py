@@ -592,6 +592,31 @@ def install(app):
             project['updated']=max(time.time(),before['updated']+.000001)
             return save_project_version(project,before)
 
+    @app.get('/api/studio/projects/{identifier}/dialogue-review')
+    def dialogue_review(identifier: str):
+        """Local proposals only: no provider, inference or project mutation."""
+        from dialogue_review import build_dialogue_review
+        with s.state_lock:
+            return build_dialogue_review(s.project_by_id(identifier))
+
+    @app.post('/api/studio/projects/{identifier}/dialogue-review/apply')
+    def apply_dialogue_review(identifier: str, body: dict):
+        from dialogue_review import apply_dialogue_review as apply_proposals
+        with s.state_lock:
+            project = s.project_by_id(identifier)
+            expected = body.get('expected_revision')
+            if (type(expected) not in (int, float) or not math.isfinite(expected) or
+                    expected != project['updated']):
+                raise HTTPException(409, 'Dự án đã thay đổi; kiểm tra lại lời đọc trước khi áp dụng.')
+            if any(row.get('project_id') == identifier and row.get('state') in ('queued', 'running')
+                   for row in all_items('job')):
+                raise HTTPException(409, 'Chờ hoặc hủy tác vụ của video trước khi đổi nội dung lồng tiếng.')
+            revised = apply_proposals(project, body.get('signature'), body.get('proposal_ids'))
+            # The ordinary editor path validates rows, records an undoable
+            # revision and invalidates derived speech timings by identity.
+            return s.update_project(identifier, {'expected_revision': expected,
+                                                 'segments': revised['segments']})
+
     @app.post('/api/studio/projects/{identifier}/caption-layout')
     def caption_layout(identifier: str, body: dict):
         """Read-only draft layout using the exact page planner used by ASS export."""

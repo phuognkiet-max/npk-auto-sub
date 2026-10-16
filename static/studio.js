@@ -1614,6 +1614,8 @@ function renderCues() {
   };
   $("#createSubs").onclick = () => extractDialog("ocr");
   $("#translateSubs").onclick = translationDialog;
+  $("#translateSubs").insertAdjacentHTML('afterend', '<button id="reviewDialogue">Kiểm tra lời đọc</button>');
+  $("#reviewDialogue").onclick = guard(dialogueReviewDialog);
   $("#importSubs").onclick = () => {
     importAsTarget = false;
     $("#subtitleFile").click();
@@ -1823,6 +1825,50 @@ function selectedSpeechText(row, params = P?.params || {}) {
     || ["spoken_text", "translated", "text"];
   for (const key of keys) { const text = String(row[key] || "").trim(); if (text) return text; }
   return "";
+}
+async function dialogueReviewDialog() {
+  await save();
+  if (!P) return;
+  const id = P.id, version = editVersion, revision = P.updated;
+  const report = await api('/api/studio/projects/' + id + '/dialogue-review');
+  if (P?.id !== id || dirty || saving || editVersion !== version || P.updated !== revision ||
+      report.expected_revision !== revision)
+    throw new Error('Nội dung đã đổi; mở lại Kiểm tra lời đọc để lấy đúng bản đang dùng.');
+  const proposals = (report.proposals || []).slice(0, 80);
+  const choices = proposals.map(proposal => {
+    const indices = proposal.indices || [], first = indices[0], last = indices.at(-1);
+    const samples = indices.map(index => {
+      const row = P.segments[index];
+      const disabled = (proposal.changes || []).some(change => change.index === index && change.speech_enabled === false);
+      return row ? `<div><strong>Câu ${index + 1} · ${disabled ? 'đề xuất tắt đọc' : 'giữ đọc'}</strong><p>Lời gốc: ${esc(row.text || '')}</p><p>Đang đọc: ${esc(selectedSpeechText(row))}</p></div>` : '';
+    }).join('');
+    return `<article class="info"><label class="check"><input type="checkbox" data-dialogue-proposal="${esc(proposal.id)}">${esc(proposal.message)}</label><small>Câu ${first + 1}${last !== first ? '–' + (last + 1) : ''}</small><details><summary>Xem đủ lời gốc và lời đang đọc</summary>${samples}</details></article>`;
+  }).join('');
+  const issues = (report.issues || []).slice(0, 30).map(issue => `<p>${esc(issue.message || '')}</p>`).join('');
+  openModal('Kiểm tra lời đọc', `<p>Đây là gợi ý từ nội dung đã có trong máy. Mở chi tiết, xem lời gốc và chủ động chọn những gợi ý bạn đồng ý. Câu lặp có thể là lời nhấn mạnh có chủ ý.</p><p class="muted">Áp dụng chỉ tắt lồng tiếng ở các câu đã chọn; phụ đề, bản dịch, mốc thời gian và vùng xóa chữ được giữ. Có thể hoàn tác hoặc khôi phục phiên bản. Không gửi nội dung tới dịch vụ AI.</p>${choices || '<div class="info">Chưa thấy nhóm lặp hoặc dòng ghi nguồn đủ rõ để đề xuất. Bạn vẫn có thể chỉnh Lời đọc và nhịp nghỉ của từng câu.</div>'}${(report.proposals || []).length > proposals.length ? '<p class="warning">Đang hiển thị 80 gợi ý đầu. Sau khi xử lý, mở kiểm tra lại để xem phần còn lại.</p>' : ''}${issues ? `<details><summary>Những chỗ cần xem riêng</summary>${issues}</details>` : ''}`, [
+    {label: 'Đóng', run: () => closeModal()},
+    ...(proposals.length ? [{label: 'Áp dụng các gợi ý đã chọn', primary: true, run: async () => {
+      const ids = $$('[data-dialogue-proposal]:checked').map(input => input.dataset.dialogueProposal);
+      if (!ids.length) throw new Error('Chọn ít nhất một gợi ý hoặc bấm Đóng để giữ nguyên.');
+      if (P?.id !== id || dirty || saving || editVersion !== version || P.updated !== revision ||
+          report.expected_revision !== revision)
+        throw new Error('Nội dung đã đổi; mở lại Kiểm tra lời đọc trước khi áp dụng.');
+      const result = await api('/api/studio/projects/' + id + '/dialogue-review/apply', {
+        expected_revision: report.expected_revision, signature: report.signature, proposal_ids: ids});
+      if (P?.id !== id) { closeModal(); return; }
+      if (dirty || saving || editVersion !== version) {
+        conflict = true;
+        closeModal();
+        notice('Đã lưu lựa chọn lời đọc. Bản đang nhập vẫn được giữ; tải lại dự án để đối chiếu.', true);
+        return;
+      }
+      remember();
+      P = result; quality = null; editVersion++; selected.clear();
+      closeModal(); renderPanel(); drawCaption(); updateUndo();
+      $('#saved').textContent = 'Đã lưu';
+      notice('Đã lưu lựa chọn lời đọc. Bản giọng và video trước vẫn được giữ; tạo lại phần lồng tiếng khi sẵn sàng.');
+    }}] : []),
+  ]);
 }
 function speechSourceName(params = P?.params || {}) {
   return ({translated: "Bản dịch", edited: "Lời đã biên tập", source: "Phụ đề gốc"})[params.tts_text_source] || "Tương thích dự án cũ";
@@ -3026,6 +3072,8 @@ function renderVoice() {
   textChoice.value = p.tts_text_source || "edited";
   textChoice.title = "Bản dịch: chỉ đọc bản dịch. Lời đã biên tập: ưu tiên lời đọc riêng rồi bản dịch. Phụ đề gốc: chỉ đọc lời gốc.";
   textChoice.parentElement.insertAdjacentHTML("afterend", '<p id="voiceSpeechSourceHint" class="muted speech-source-hint" role="status"></p><p id="voiceSpeechArtifactStatus" class="muted speech-source-hint" role="status">Đang kiểm tra bản giọng đã tạo…</p>');
+  textChoice.parentElement.insertAdjacentHTML('afterend', '<button id="reviewVoiceDialogue">Kiểm tra lời đọc</button>');
+  $("#reviewVoiceDialogue").onclick = guard(dialogueReviewDialog);
   updateSpeechSourceHints();
   guard(updateVoiceSpeechState)();
   $("#voiceSource").onchange = () => {

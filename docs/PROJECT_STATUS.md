@@ -1,5 +1,7 @@
 # Trạng thái thực tế của dự án
 
+Cập nhật **16/10/2026**: đã sửa lỗi gọi lại API vì JSON fence, sửa định dạng JSON của 9Router có giới hạn và ngữ cảnh khi chỉ dịch câu còn trống. Thêm **Kiểm tra lời đọc** cục bộ với preview và chủ động chọn từng gợi ý, để xử lý nhóm lặp/dòng ghi nguồn mà không sửa caption hoặc vùng xóa chữ. Chi tiết và giới hạn tại [API-TRANSLATION-FOCUS-2026-10-16](API-TRANSLATION-FOCUS-2026-10-16.md). Chưa tạo video mới hoặc xác minh lexical toàn bộ trong lượt cập nhật này.
+
 Phiên bản source được chia sẻ là **NPK Auto Sub 0.8.5 RC9**, kèm thay đổi tự bố trí lời đọc ngày **15/10/2026**. Dự án đang phát triển; đây chưa phải sản phẩm đã nghiệm thu chất lượng chung, bộ cài portable hoặc bản phát hành đã kiểm lại trên máy sạch.
 
 ## Đã có một ca chạy trọn quy trình
